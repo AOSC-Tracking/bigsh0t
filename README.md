@@ -6,7 +6,7 @@ A collection of frei0r plugins for VR video, with support for [Shotcut](https://
 
 ### Hemispherical to Equirectangular
 
-Converts a video frame with two hemispherical images to a single equirectangular frame. The plugin assumes that both hemispheres are in the frame. If you have a camera like the Garmin Virb360 that produces two videos, one from each camera, you should statr by converting them to a single movie by placing them side by side using, for example, [ffmpeg](https://www.ffmpeg.org/) (you can also add parameters to produce lossless, intra-only output here for easier editing):
+Converts a video frame with two hemispherical images to a single equirectangular frame. The plugin assumes that both hemispheres are in the frame. If you have a camera like the Garmin Virb360 that produces two videos, one from each camera, you should start by converting them to a single movie by placing them side by side using, for example, [ffmpeg](https://www.ffmpeg.org/) (you can also add parameters to produce lossless, intra-only output here for easier editing):
 
     ffmpeg \
         -i left.mp4 \
@@ -54,7 +54,7 @@ Adds a black matte to the frame. Use this if you filmed using a 360 camera but o
 
 ### Rectilinear to Equirectangular
 
-Converts a rectilinear (a normal-looking) image to an equirectangular image. Use this to place "normal" footage in a 360 movie.
+Converts a rectilinear (a normal-looking) image to an equirectangular image. Use this together with **Transform 360** to place "normal" footage in a 360 movie.
 
 #### Parameters
 
