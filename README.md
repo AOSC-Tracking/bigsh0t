@@ -2,6 +2,21 @@
 
 A collection of frei0r plugins for VR video, with support for [Shotcut](https://shotcut.org/). [GPL-2.0](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html), like [frei0r](https://github.com/dyne/frei0r).
 
+## Building
+
+The build script assumes that you have cloned [frei0r](https://github.com/dyne/frei0r) next to this repo, and that your directory structure looks something like this:
+
+    bigsh0t/
+        src/
+           ...
+        CMakeLists.txt
+        README.md
+    frei0r/
+        include/
+            frei0r.hpp
+
+Bigsh0t will use OpenMP on Windows.
+
 ## Plugins
 
 ### Hemispherical to Equirectangular
