@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
 #include "frei0r.hpp"
 #include "Matrix.hpp"
 #include "MPFilter.hpp"
@@ -69,7 +70,7 @@ public:
             }
             vv = smooth (vv);
             
-            for (int x = 0; x < width; ++x) {
+            for (unsigned int x = 0; x < width; ++x) {
                 double theta = M_PI - (2 * M_PI * x / width);
                 double cosTheta = cos(theta);
                 
@@ -85,7 +86,7 @@ public:
                 vh = smooth (vh);
                 
                 double v = vh * vv;
-                int vInt = v * 256;
+                int vInt = (int) (v * 256);
                 if (vInt > 255) {
                     vInt = 255;
                 }

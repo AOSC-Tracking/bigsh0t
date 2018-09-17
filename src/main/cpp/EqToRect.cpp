@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
 #include "frei0r.hpp"
 #include "Matrix.hpp"
 #include "MPFilter.hpp"
@@ -44,7 +45,7 @@ public:
     virtual void update(double time,
 	                    uint32_t* out,
                         const uint32_t* in) {
-        interpolation = interpolationParam;
+        interpolation = (int) interpolationParam;
         MPFilter::updateMP(this, time, out, in, width, height);
     }
     
@@ -60,9 +61,9 @@ protected:
         int w = width;
         int h = height;
 
-        float yawR = DEG2RADF(yaw);
-        float pitchR = DEG2RADF(pitch);
-        float rollR = DEG2RADF(roll);
+        double yawR = DEG2RADF(yaw);
+        double pitchR = DEG2RADF(pitch);
+        double rollR = DEG2RADF(roll);
 
         Matrix3 xform;
 
@@ -72,7 +73,7 @@ protected:
         rotateZ(xform, yawR);
         
         int xi, yi;
-        float xt, yt;
+        double xt, yt;
 
         Vector3 ray;
         Vector3 ray2;
@@ -95,9 +96,9 @@ protected:
 
                 mulM3V3(xform, ray, ray2);
 
-                float theta_out = atan2 (ray2[1], ray2[0]);
-                float dxy = sqrt(ray2[0] * ray2[0] + ray2[1] * ray2[1]);
-                float phi_out = atan2 (ray2[2], dxy);
+                double theta_out = atan2 (ray2[1], ray2[0]);
+                double dxy = sqrt(ray2[0] * ray2[0] + ray2[1] * ray2[1]);
+                double phi_out = atan2 (ray2[2], dxy);
 
                 xt = w / 2 + (w / 2) * theta_out / M_PI;
                 yt = h / 2 + (h / 2) * phi_out / (M_PI / 2);

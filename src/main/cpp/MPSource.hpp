@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
 #ifndef MPSource_HPP
 #define MPSource_HPP
 

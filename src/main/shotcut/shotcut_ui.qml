@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
 #define PROPERTY_VARIABLES(PROPERTY) property double PROPERTY ## Start : 0.0;\
     property double PROPERTY ## Middle : 0.0;\
     property double PROPERTY ## End : 0.0;

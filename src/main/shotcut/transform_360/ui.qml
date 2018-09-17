@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
 #include "../shotcut_ui.qml"
 
 import QtQuick 2.1

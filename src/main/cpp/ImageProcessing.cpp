@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
 #include "ImageProcessing.hpp"
 #include "frei0r_math.h"
 
@@ -27,12 +28,12 @@ uint32_t lerp(uint32_t a, uint32_t b, int x) {
 }
 
 uint32_t sampleBilinear (uint32_t* frame, double x, double y, int width, int height) {
-    int ix0 = x;
-    int iy0 = y;
+    int ix0 = (int) x;
+    int iy0 = (int) y;
     int ix1 = ix0 + 1;
     int iy1 = iy0 + 1;
-    int ax = (x - ix0) * 256;
-    int ay = (y - iy0) * 256;
+    int ax = (int) ((x - ix0) * 256);
+    int ay = (int) ((y - iy0) * 256);
     
     if (ix0 < 0 || iy0 < 0 || ix0 > width - 1 || iy0 > height - 1) {
         return 0;
@@ -49,8 +50,6 @@ uint32_t sampleBilinear (uint32_t* frame, double x, double y, int width, int hei
     uint32_t c = frame[iy1 * width + ix0];
     uint32_t d = frame[iy1 * width + ix1];
     uint32_t t = 0;
-    
-    
     
     uint32_t e = lerp(a, b, ax);
     uint32_t f = lerp(c, d, ax);
@@ -71,12 +70,12 @@ uint32_t sampleBilinearWrappedClamped (uint32_t* frame, double x, double y, int 
         y = height;
     }
     
-    int ix0 = x;
-    int iy0 = y;
+    int ix0 = (int) x;
+    int iy0 = (int) y;
     int ix1 = ix0 + 1;
     int iy1 = iy0 + 1;
-    int ax = (x - ix0) * 256;
-    int ay = (y - iy0) * 256;
+    int ax = (int) ((x - ix0) * 256);
+    int ay = (int) ((y - iy0) * 256);
     
     
     if (ix1 >= width) {

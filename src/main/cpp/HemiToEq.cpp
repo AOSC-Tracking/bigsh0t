@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
 #include "frei0r.hpp"
 #include "Matrix.hpp"
 #include "MPFilter.hpp"
@@ -83,8 +84,8 @@ public:
     virtual void update(double time,
 	                    uint32_t* out,
                         const uint32_t* in) {
-        interpolation = interpolationParam;
-        projection = projectionParam;
+        interpolation = (int) interpolationParam;
+        projection = (int) projectionParam;
         MPFilter::updateMP(this, time, out, in, width, height);
     }
 
@@ -95,36 +96,36 @@ public:
     }
 
 protected:
-    void sample (uint32_t *ibuf1, float fov2, float radius, float thetaH, float phi, float up_dir, int hemisphere, Matrix3& hemi_transform,
-                 float nadir_correction_start, float nadir_radius_scale, uint32_t* out, float cx, float cy) {
+    void sample (uint32_t *ibuf1, double fov2, double radius, double thetaH, double phi, double up_dir, int hemisphere, Matrix3& hemi_transform,
+                 double nadir_correction_start, double nadir_radius_scale, uint32_t* out, double cx, double cy) {
         Vector3 ray;
         Vector3 ray2;
 
-        float cos_phi = cos(phi);
+        double cos_phi = cos(phi);
         ray[0] = cos(-thetaH) * cos_phi;
         ray[1] = sin(-thetaH) * cos_phi;
         ray[2] = sin(phi);
 
         mulM3V3 (hemi_transform, ray, ray2);
 
-        float off_axis = sqrt(ray2[1] * ray2[1] + ray2[2] * ray2[2]);
-        float off_axis_direction = atan2(-ray2[2], ray2[1]);
+        double off_axis = sqrt(ray2[1] * ray2[1] + ray2[2] * ray2[2]);
+        double off_axis_direction = atan2(-ray2[2], ray2[1]);
 
         double off_axis_down = -cos(up_dir - off_axis_direction) * off_axis;
 
-        float off_axis_angle = atan2(off_axis, ray2[0]);
+        double off_axis_angle = atan2(off_axis, ray2[0]);
 
         if (off_axis_down > nadir_correction_start) {
-            float factor = 1.0 - (1.0 - nadir_radius_scale) * (off_axis_down - nadir_correction_start) / (1.0 - nadir_correction_start);
+            double factor = 1.0 - (1.0 - nadir_radius_scale) * (off_axis_down - nadir_correction_start) / (1.0 - nadir_correction_start);
             off_axis_angle *= factor;
         }
 
-        float srcX, srcY;
+        double srcX, srcY;
 
         switch (projection) {
             case Projection::EQUIDISTANT_FISHEYE:
-                srcX = (float) ((cos(off_axis_direction) * off_axis_angle / fov2) * radius);
-                srcY = (float) ((sin(off_axis_direction) * off_axis_angle / fov2) * radius);
+                srcX = ((cos(off_axis_direction) * off_axis_angle / fov2) * radius);
+                srcY = ((sin(off_axis_direction) * off_axis_angle / fov2) * radius);
                 break;
         }
 
@@ -152,9 +153,9 @@ protected:
         int w = width;
         int h = height;
 
-        float yawR = DEG2RADF(yaw);
-        float pitchR = DEG2RADF(pitch);
-        float rollR = DEG2RADF(roll);
+        double yawR = DEG2RADF(yaw);
+        double pitchR = DEG2RADF(pitch);
+        double rollR = DEG2RADF(roll);
 
         Matrix3 xform_front;
         Matrix3 xform_back;
@@ -172,30 +173,29 @@ protected:
         rotateX(xform_back, rollR / 2);
 
         int xi, yi;
-        float xt, yt;
 
-        float fov90radius = 90.0f * (radius * 2) / fov;
-        float fov2 = (radius * 90.0f / fov90radius) * 2 * M_PI / 360.0f;
+        double fov90radius = 90.0f * (radius * 2) / fov;
+        double fov2 = (radius * 90.0f / fov90radius) * 2 * M_PI / 360.0f;
 
-        float theta_margin = fov2 - M_PI / 2;
-        float nadir_radius_scale = nadirRadius / radius;
+        double theta_margin = fov2 - M_PI / 2;
+        double nadir_radius_scale = nadirRadius / radius;
 
-        float pixelRadius = radius * w;
+        double pixelRadius = radius * w;
         
-        float front_x = frontX * w;
-        float front_y = frontY * h;
-        float front_up = DEG2RADF(90 - frontUp);
+        double front_x = frontX * w;
+        double front_y = frontY * h;
+        double front_up = DEG2RADF(90 - frontUp);
 
-        float back_x = backX * w;
-        float back_y = backY * h;
-        float back_up = DEG2RADF(90 - backUp);
+        double back_x = backX * w;
+        double back_y = backY * h;
+        double back_up = DEG2RADF(90 - backUp);
         
         unsigned char blendBuffer[4];
 
         for (yi = start_scanline; yi < start_scanline + num_scanlines; yi++) {
-            float phi = M_PI * ((float) yi - h / 2) / h;
+            double phi = M_PI * ((double) yi - h / 2) / h;
             for (xi = 0; xi < w; xi++) {
-                float theta = 2 * M_PI * ((float) xi - w / 2) / w;
+                double theta = 2 * M_PI * ((double) xi - w / 2) / w;
 
                 size_t offset = w * yi + xi;
 
@@ -211,12 +211,12 @@ protected:
                     sample(ibuf1, fov2, pixelRadius, theta, phi, front_up, 1, xform_front, nadirCorrectionStart, nadir_radius_scale, out + offset, front_x, front_y);
                 } else {
                     sample(ibuf1, fov2, pixelRadius, theta, phi, front_up, 1, xform_front, nadirCorrectionStart, nadir_radius_scale, (uint32_t*) blendBuffer, front_x, front_y);
-                    float blend = 0.0f;
+                    double blend = 0.0f;
                     if (theta < 0) {
-                        blend = -(float) ((theta + M_PI / 2 - theta_margin) / (2 * theta_margin));
+                        blend = -(double) ((theta + M_PI / 2 - theta_margin) / (2 * theta_margin));
                         theta = theta + M_PI;
                     } else {
-                        blend = (float) ((theta - M_PI / 2 + theta_margin) / (2 * theta_margin));
+                        blend = (double) ((theta - M_PI / 2 + theta_margin) / (2 * theta_margin));
                         theta = theta - M_PI;
                     }
                     

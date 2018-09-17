@@ -34,7 +34,7 @@ macro (preprocess_shotcut_front_end plugin)
         COMMENT "Preprocessing UI for ${plugin}"
         VERBATIM
     )
-endmacro(preprocess_front_end)
+endmacro(preprocess_shotcut_front_end)
 
 macro (build_plugin plugin main_source)
     add_library(${plugin} MODULE ${CPP_SOURCE}/${main_source} ${COMMON_FILES})

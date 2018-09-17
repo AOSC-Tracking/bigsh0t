@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
 #include "MPSource.hpp"
 #include "omp_compat.h"
 

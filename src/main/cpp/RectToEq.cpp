@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
 #include "frei0r.hpp"
 #include "Matrix.hpp"
 #include "MPFilter.hpp"
@@ -35,7 +36,7 @@ public:
     virtual void update(double time,
 	                    uint32_t* out,
                         const uint32_t* in) {
-        interpolation = interpolationParam;
+        interpolation = (int) interpolationParam;
         MPFilter::updateMP(this, time, out, in, width, height);
     }
     
@@ -51,20 +52,20 @@ protected:
         int w = width;
         int h = height;
 
-        float hfovR = DEG2RADF(hfov);
-        float vfovR = DEG2RADF(vfov);
+        double hfovR = DEG2RADF(hfov);
+        double vfovR = DEG2RADF(vfov);
 
         int xi, yi;
-        float xt, yt;
+        double xt, yt;
 
-        float x0 = -tan(hfovR / 2);
-        float y0 = -tan(vfovR / 2);
-        float xs = -2 * x0;
-        float ys = -2 * y0;
+        double x0 = -tan(hfovR / 2);
+        double y0 = -tan(vfovR / 2);
+        double xs = -2 * x0;
+        double ys = -2 * y0;
 
         Vector3 ray;
 
-        int x_width = hfovR * w / (2 * M_PI);
+        int x_width = (int) (hfovR * w / (2 * M_PI));
 
         int min_x = w / 2 - x_width / 2 - 1;
         int max_x = w / 2 + x_width / 2 + 1;
@@ -78,11 +79,11 @@ protected:
         memset(&out[start_scanline * width], 0, num_scanlines * width * 4);
 
         for (yi = start_scanline; yi < start_scanline + num_scanlines; yi++) {
-            float phi = M_PI * ((float) yi - h / 2) / h;
-            float cos_phi = cos(phi);
-            float sin_phi = sin(phi);
+            double phi = M_PI * ((double) yi - h / 2) / h;
+            double cos_phi = cos(phi);
+            double sin_phi = sin(phi);
             for (xi = min_x; xi < max_x; xi++) {
-                float theta = 2 * M_PI * ((float) xi - w / 2) / w;
+                double theta = 2 * M_PI * ((double) xi - w / 2) / w;
 
                 ray[0] = cos(theta) * cos_phi;
 
