@@ -2,7 +2,7 @@
 
 A collection of frei0r plugins for VR video, with support for [Shotcut](https://shotcut.org/). [GPL-2.0](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html), like [frei0r](https://github.com/dyne/frei0r).
 
-## Building
+## Build
 
 The build script assumes that you have cloned [frei0r](https://github.com/dyne/frei0r) next to this repo, and that your directory structure looks something like this:
 
@@ -15,7 +15,25 @@ The build script assumes that you have cloned [frei0r](https://github.com/dyne/f
         include/
             frei0r.hpp
 
-Bigsh0t will use OpenMP on Windows.
+### Windows 64 bit
+
+Make sure that you compile to a 64-bit target. If you compile to 32-bit DLL:s, Shotcut will not be able to load them. Bigsh0t will use OpenMP on Windows.
+
+### OSX
+
+Shotcut will not use OpenMP.
+
+## Install
+
+There is no installer. Depending on the platform you are on, you'll have to copy the files into the right folders. When the build process is completed you should have a `.zip` or `.tar.gz` in the CMake build directory. 
+
+### Windows
+
+Assuming Shotcut is installed in `C:\Program Files\Shotcut`, copy the DLLs into `C:\Program Files\Shotcut\lib\frei0r-1` and everything in the `shotcut/filters` folder into `C:\Program Files\Shotcut\share\shotcut\qml\filters`.
+
+### OSX
+
+Assuming Shotcut is installed in `/Applications/Shotcut.app`, copy the `.so` files into `/Applications/Shotcut.app/Contents/MacOS/lib/frei0r-1` and everything in the `shotcut/filters` folder into `/Applications/Shotcut.app/Contents/MacOS/share/shotcut/qml/filters`.
 
 ## Plugins
 
