@@ -6,13 +6,13 @@ A collection of frei0r plugins for VR video, with support for [Shotcut](https://
 
 If you are upgrading from bigsh0t 1.0, you need to remove the previous plugins and edit your `.mlt` files. Change:
 
-      <property name="mlt_service">frei0r.hemi_to_eq</property>
-      <property name="shotcut:filter">hemi_to_eq</property>
+    <property name="mlt_service">frei0r.hemi_to_eq</property>
+    <property name="shotcut:filter">hemi_to_eq</property>
 
 to:
 
-      <property name="mlt_service">frei0r.bigsh0t_hemi_to_eq</property>
-      <property name="shotcut:filter">bigsh0t_hemi_to_eq</property>
+    <property name="mlt_service">frei0r.bigsh0t_hemi_to_eq</property>
+    <property name="shotcut:filter">bigsh0t_hemi_to_eq</property>
 
 
 ## Build
