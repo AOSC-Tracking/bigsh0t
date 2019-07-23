@@ -3,63 +3,48 @@
 #include "Matrix.hpp"
 #include "MPFilter.hpp"
 #include "ImageProcessing.hpp"
+#include "Frei0rParameter.hpp"
+#include "Frei0rFilter.hpp"
 #include <limits>
 #include <climits>
 #include <cmath>
+#include <mutex>
 
-#define M_PI           3.14159265358979323846  
+#ifndef M_PI
+#define M_PI           3.14159265358979323846
+#endif
 #define DEG2RADF(x) ((x) * M_PI / 180.0)
 
 enum Projection {
     EQUIDISTANT_FISHEYE = 0
 };
 
-
-class HemiToEquirect : public frei0r::filter, MPFilter {
+class HemiToEquirect : public Frei0rFilter, MPFilter {
 
 public:
-    double yaw;
-	double pitch;
-    double roll;
-    int interpolation;
-    double interpolationParam;
-    int projection;
-    double projectionParam;
-    double fov;
-    double radius;
-    double frontX;
-    double frontY;
-    double frontUp;
-    double backX;
-    double backY;
-    double backUp;
-    double nadirRadius;
-    double nadirCorrectionStart;
-	
-    
-    HemiToEquirect(unsigned int width, unsigned int height) {
-        register_param(yaw, "yaw", "");
-        register_param(pitch, "pitch", "");
-        register_param(roll, "roll", "");
-        
-        register_param(fov, "fov", "");
-        register_param(radius, "radius", "");
-        
-        register_param(nadirRadius, "nadirRadius", "");
-        register_param(nadirCorrectionStart, "nadirCorrectionStart", "");
-        
-        register_param(frontX, "frontX", "");
-        register_param(frontY, "frontY", "");
-        register_param(frontUp, "frontUp", "");
-        
-        register_param(backX, "backX", "");
-        register_param(backY, "backY", "");
-        register_param(backUp, "backUp", "");
-        
-        register_param(interpolationParam, "interpolation", "");
-        register_param(projectionParam, "projection", "");
-        
-        yaw = 0.357f;
+    Frei0rParameter<double,double> yaw;
+	Frei0rParameter<double,double> pitch;
+    Frei0rParameter<double,double> roll;
+    Frei0rParameter<int,double> interpolation;
+    Frei0rParameter<int,double> projection;
+    Frei0rParameter<double,double> fov;
+    Frei0rParameter<double,double> radius;
+    Frei0rParameter<double,double> frontX;
+    Frei0rParameter<double,double> frontY;
+    Frei0rParameter<double,double> frontUp;
+    Frei0rParameter<double,double> backX;
+    Frei0rParameter<double,double> backY;
+    Frei0rParameter<double,double> backUp;
+    Frei0rParameter<double,double> nadirRadius;
+    Frei0rParameter<double,double> nadirCorrectionStart;
+
+	std::mutex lock;
+
+	float* map;
+	bool updateMap;
+
+    HemiToEquirect(unsigned int width, unsigned int height) : Frei0rFilter (width, height) {
+		yaw = 0.357f;
         pitch = 0.389f;
         roll = -0.693f;
 
@@ -76,28 +61,73 @@ public:
         backUp = 270.0f;
         nadirRadius = 428.0 / 1920.0f;
         nadirCorrectionStart = 0.8f;
+
+		map = NULL;
+		updateMap = true;
+
+        register_fparam(yaw, "yaw", "");
+        register_fparam(pitch, "pitch", "");
+        register_fparam(roll, "roll", "");
+
+        register_fparam(fov, "fov", "");
+        register_fparam(radius, "radius", "");
+
+        register_fparam(nadirRadius, "nadirRadius", "");
+        register_fparam(nadirCorrectionStart, "nadirCorrectionStart", "");
+
+        register_fparam(frontX, "frontX", "");
+        register_fparam(frontY, "frontY", "");
+        register_fparam(frontUp, "frontUp", "");
+
+        register_fparam(backX, "backX", "");
+        register_fparam(backY, "backY", "");
+        register_fparam(backUp, "backUp", "");
+
+        register_fparam(interpolation, "interpolation", "");
+        register_fparam(projection, "projection", "");
     }
 
     ~HemiToEquirect() {
+		if (map != NULL) {
+			free (map);
+		}
     }
-    
+
     virtual void update(double time,
 	                    uint32_t* out,
                         const uint32_t* in) {
-        interpolation = (int) interpolationParam;
-        projection = (int) projectionParam;
+
+		// frei0r filter instances are not thread-safe. Shotcut ignores that, so we'll
+		// deal with it by wrapping the execution in a mutex
+		std::lock_guard<std::mutex> guard(lock);
+
+        if (map == NULL || yaw.changed() || pitch.changed() || roll.changed() || projection.changed() || fov.changed() ||
+    		radius.changed() || frontX.changed() || frontY.changed() || frontUp.changed() || backX.changed() || backY.changed() ||
+			backUp.changed() || nadirRadius.changed() || nadirCorrectionStart.changed()) {
+			if (map == NULL) {
+				map = (float*) malloc (width * height * 5 * sizeof(float));
+			}
+			updateMap = true;
+		} else {
+			updateMap = false;
+		}
+
         MPFilter::updateMP(this, time, out, in, width, height);
     }
 
     virtual void updateLines(double time,
 	                    uint32_t* out,
                         const uint32_t* in, int start, int num) {
-        hemi_to_equirect_thread(out, (uint32_t*) in, start, num);
+		if (updateMap) {
+        	makeMap (start, num);
+		}
+
+		applyMap(out, (uint32_t*) in, start, num);
     }
 
 protected:
-    void sample (uint32_t *ibuf1, double fov2, double radius, double thetaH, double phi, double up_dir, int hemisphere, Matrix3& hemi_transform,
-                 double nadir_correction_start, double nadir_radius_scale, uint32_t* out, double cx, double cy) {
+    void sample (int mx, int my, int mz, double fov2, double radius, double thetaH, double phi, double up_dir, Matrix3& hemi_transform,
+                 double nadir_correction_start, double nadir_radius_scale, double cx, double cy) {
         Vector3 ray;
         Vector3 ray2;
 
@@ -132,24 +162,66 @@ protected:
         srcX += cx;
         srcY += cy;
 
+		int midx = ((my * width) + mx) * 5 + 2 * mz;
+
         if (srcX >= 0 && srcY >= 0 && srcX < width && srcY < height) {
-            uint32_t pixel;
-            switch(interpolation) {
-                case Interpolation::NONE:
-                    pixel = sampleNearestNeighbor(ibuf1, srcX, srcY, width, height);
-                    break;
-                case Interpolation::BILINEAR:
-                    pixel = sampleBilinear(ibuf1, srcX, srcY, width, height);
-                    break;
-            }
-            *out = pixel;
+			map[midx + 0] = (float) srcX;
+			map[midx + 1] = (float) srcY;
         } else {
-            *out = 0;
+            map[midx + 0] = -1;
+			map[midx + 1] = -1;
         }
     }
 
-    void hemi_to_equirect_thread(uint32_t* out, uint32_t* ibuf1, int start_scanline, int num_scanlines) {
-        
+	uint32_t sampleImage (const uint32_t* in, float x, float y) {
+		switch(interpolation) {
+            case Interpolation::NONE:
+                return sampleNearestNeighbor(in, x, y, width, height);
+            case Interpolation::BILINEAR:
+                return sampleBilinear(in, x, y, width, height);
+        }
+		return 0;
+	}
+
+	void applyMap(uint32_t* out, const uint32_t* in, int start_scanline, int num_scanlines) {
+		for (int yi = start_scanline; yi < start_scanline + num_scanlines; yi++) {
+            for (int xi = 0; xi < width; xi++) {
+				int idx = ((yi * width) + xi);
+				int midx = idx * 5;
+				if (map[midx] > 0) {
+					if (map[midx + 2] < 0) {
+						// No blend
+
+						float sx = map[midx + 0];
+						float sy = map[midx + 1];
+						out[idx] = sampleImage (in, sx, sy);
+					} else {
+						// Blend
+						float sxA = map[midx + 0];
+						float syA = map[midx + 1];
+						uint32_t blendA = sampleImage (in, sxA, syA);
+
+						float sxB = map[midx + 2];
+						float syB = map[midx + 3];
+						uint32_t blendB = sampleImage (in, sxB, syB);
+
+						float blend = map[midx + 4];
+
+						unsigned char* blendCA = (unsigned char*) &blendA;
+						unsigned char* blendCB = (unsigned char*) &blendB;
+						unsigned char* blendOut = (unsigned char*) (out + idx);
+
+						for (int c = 0; c < 4; ++c) {
+	                        blendOut[c] = (unsigned char) (blendCB[c] * blend + (1 - blend) * blendCA[c]);
+	                    }
+					}
+				}
+			}
+		}
+	}
+
+    void makeMap (int start_scanline, int num_scanlines) {
+
         int w = width;
         int h = height;
 
@@ -172,8 +244,6 @@ protected:
         rotateY(xform_back, pitchR / 2);
         rotateX(xform_back, rollR / 2);
 
-        int xi, yi;
-
         double fov90radius = 90.0f * (radius * 2) / fov;
         double fov2 = (radius * 90.0f / fov90radius) * 2 * M_PI / 360.0f;
 
@@ -181,7 +251,7 @@ protected:
         double nadir_radius_scale = nadirRadius / radius;
 
         double pixelRadius = radius * w;
-        
+
         double front_x = frontX * w;
         double front_y = frontY * h;
         double front_up = DEG2RADF(90 - frontUp);
@@ -189,15 +259,13 @@ protected:
         double back_x = backX * w;
         double back_y = backY * h;
         double back_up = DEG2RADF(90 - backUp);
-        
-        unsigned char blendBuffer[4];
 
-        for (yi = start_scanline; yi < start_scanline + num_scanlines; yi++) {
+        for (int yi = start_scanline; yi < start_scanline + num_scanlines; yi++) {
             double phi = M_PI * ((double) yi - h / 2) / h;
-            for (xi = 0; xi < w; xi++) {
+            for (int xi = 0; xi < w; xi++) {
                 double theta = 2 * M_PI * ((double) xi - w / 2) / w;
 
-                size_t offset = w * yi + xi;
+				int midx = ((yi * width) + xi) * 5;
 
                 if (theta < -M_PI / 2 - theta_margin || theta > M_PI / 2 + theta_margin) {
                     if (theta < 0) {
@@ -206,38 +274,35 @@ protected:
                         theta = theta - M_PI;
                     }
 
-                    sample(ibuf1, fov2, pixelRadius, theta, phi, back_up, 0, xform_back, nadirCorrectionStart, nadir_radius_scale, out + offset, back_x, back_y);
+                    sample(xi, yi, 0, fov2, pixelRadius, theta, phi, back_up, xform_back, nadirCorrectionStart, nadir_radius_scale, back_x, back_y);
+					map[midx + 2] = -1;
                 } else if (theta > -M_PI / 2 + theta_margin && theta < M_PI / 2 - theta_margin) {
-                    sample(ibuf1, fov2, pixelRadius, theta, phi, front_up, 1, xform_front, nadirCorrectionStart, nadir_radius_scale, out + offset, front_x, front_y);
+                    sample(xi, yi, 0, fov2, pixelRadius, theta, phi, front_up, xform_front, nadirCorrectionStart, nadir_radius_scale, front_x, front_y);
+					map[midx + 2] = -1;
                 } else {
-                    sample(ibuf1, fov2, pixelRadius, theta, phi, front_up, 1, xform_front, nadirCorrectionStart, nadir_radius_scale, (uint32_t*) blendBuffer, front_x, front_y);
-                    double blend = 0.0f;
+                    sample(xi, yi, 0, fov2, pixelRadius, theta, phi, front_up, xform_front, nadirCorrectionStart, nadir_radius_scale, front_x, front_y);
+					float blend = 0.0f;
                     if (theta < 0) {
-                        blend = -(double) ((theta + M_PI / 2 - theta_margin) / (2 * theta_margin));
+                        blend = -(float) ((theta + M_PI / 2 - theta_margin) / (2 * theta_margin));
                         theta = theta + M_PI;
                     } else {
-                        blend = (double) ((theta - M_PI / 2 + theta_margin) / (2 * theta_margin));
+                        blend = (float) ((theta - M_PI / 2 + theta_margin) / (2 * theta_margin));
                         theta = theta - M_PI;
                     }
-                    
-                    unsigned char* blendBuffer2 = (unsigned char*) (out + offset);
+                    sample(xi, yi, 1, fov2, pixelRadius, theta, phi, back_up, xform_back, nadirCorrectionStart, nadir_radius_scale, back_x, back_y);
 
-                    sample(ibuf1, fov2, pixelRadius, theta, phi, back_up, 0, xform_back, nadirCorrectionStart, nadir_radius_scale, out + offset, back_x, back_y);
-
-                    for (int c = 0; c < 4; ++c) {
-                        blendBuffer2[c] = (unsigned char) (blendBuffer2[c] * blend + (1 - blend) * blendBuffer[c]);
-                    }                    
+					map[midx + 4] = blend;
                 }
             }
         }
     }
 
-    
+
 private:
-    
+
 };
 
 frei0r::construct<HemiToEquirect> plugin("hemi_to_eq",
                 "Transforms dual-hemisphere video to equirectangular.",
                 "Leo Sutic <leo@sutic.nu>",
-                1, 0, F0R_COLOR_MODEL_PACKED32);
+                2, 0, F0R_COLOR_MODEL_PACKED32);

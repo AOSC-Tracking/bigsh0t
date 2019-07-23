@@ -6,8 +6,11 @@
 #include <limits>
 #include <climits>
 #include <cmath>
+#include <mutex>
 
-#define M_PI           3.14159265358979323846  
+#ifndef M_PI
+#define M_PI           3.14159265358979323846
+#endif
 #define SEQ_HEMI_TO_EQUIRECT_PROJECTION_EQUIDISTANT_FISHEYE 1
 #define INTERP_NONE 0
 #define DEG2RADF(x) ((x) * M_PI / 180.0)
@@ -22,15 +25,16 @@ public:
     double fov;
     double interpolationParam;
     int interpolation;
-	
-    
+
+	std::mutex lock;
+
     EqToRect(unsigned int width, unsigned int height) {
         register_param(yaw, "yaw", "");
         register_param(pitch, "pitch", "");
         register_param(roll, "roll", "");
         register_param(fov, "fov", "");
         register_param(interpolationParam, "interpolation", "");
-        
+
         yaw = 0.0;
         pitch = 0.0;
         roll = 0.0;
@@ -41,23 +45,28 @@ public:
 
     ~EqToRect() {
     }
-    
+
     virtual void update(double time,
 	                    uint32_t* out,
                         const uint32_t* in) {
+
+		// frei0r filter instances are not thread-safe. Shotcut ignores that, so we'll
+		// deal with it by wrapping the execution in a mutex
+		std::lock_guard<std::mutex> guard(lock);
+
         interpolation = (int) interpolationParam;
         MPFilter::updateMP(this, time, out, in, width, height);
     }
-    
+
     virtual void updateLines(double time,
 	                    uint32_t* out,
                         const uint32_t* in, int start, int num) {
-        transform_thread(out, (uint32_t*) in, start, num);     
+        transform_thread(out, (uint32_t*) in, start, num);
     }
 
 protected:
     void transform_thread(uint32_t* out, uint32_t* ibuf1, int start_scanline, int num_scanlines) {
-        
+
         int w = width;
         int h = height;
 
@@ -71,23 +80,23 @@ protected:
         rotateX(xform, rollR);
         rotateY(xform, pitchR);
         rotateZ(xform, yawR);
-        
+
         int xi, yi;
         double xt, yt;
 
         Vector3 ray;
         Vector3 ray2;
-        
+
         Vector3 topLeft;
         topLeft[0] = 1.0;
         topLeft[1] = -tan(DEG2RADF(fov / 2));
         topLeft[2] = topLeft[1] * height / width;
-        
+
         Vector3 delta;
         delta[0] = 0.0;
         delta[1] = -topLeft[1] / (width / 2);
         delta[2] = -topLeft[2] / (height / 2);
-	
+
         for (yi = start_scanline; yi < start_scanline + num_scanlines; yi++) {
             for (xi = 0; xi < w; xi++) {
                 ray[0] = 1.0;
@@ -132,12 +141,12 @@ protected:
         }
     }
 
-    
+
 private:
-    
+
 };
 
-frei0r::construct<EqToRect> plugin("transform_360",
-                "Rotates an equirectangular map.",
+frei0r::construct<EqToRect> plugin("eq_to_rect",
+                "Extracts a rectilinear image from an equirectangular.",
                 "Leo Sutic <leo@sutic.nu>",
-                1, 0, F0R_COLOR_MODEL_PACKED32);
+                2, 0, F0R_COLOR_MODEL_PACKED32);

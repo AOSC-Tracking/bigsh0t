@@ -14,11 +14,11 @@ void MPSource::updateMP(MPSource* source, double time,
     for (int i = 0; i < numThreads; ++i) {
         int start = i * blockSize;
         int end = start + blockSize;
-        if (start <= height) {
+        if (start < height) {
             if (end > height) {
                 end = height;
             }
-            source->updateLines(time, out, start, blockSize);
+            source->updateLines(time, out, start, end - start);
         }
     }
 }

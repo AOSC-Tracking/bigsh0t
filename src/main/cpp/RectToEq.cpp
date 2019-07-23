@@ -6,8 +6,12 @@
 #include <limits>
 #include <climits>
 #include <cmath>
+#include <mutex>
 
-#define M_PI           3.14159265358979323846  
+#ifndef M_PI
+#define M_PI           3.14159265358979323846
+#endif
+
 #define DEG2RADF(x) ((x) * M_PI / 180.0)
 
 class RectToEq : public frei0r::filter, MPFilter {
@@ -17,13 +21,14 @@ public:
     double vfov;
     double interpolationParam;
     int interpolation;
-	
-    
+
+	std::mutex lock;
+
     RectToEq(unsigned int width, unsigned int height) {
         register_param(hfov, "hfov", "");
         register_param(vfov, "vfov", "");
         register_param(interpolationParam, "interpolation", "");
-        
+
         hfov = 90;
         vfov = 60;
 
@@ -32,23 +37,27 @@ public:
 
     ~RectToEq() {
     }
-    
+
     virtual void update(double time,
 	                    uint32_t* out,
                         const uint32_t* in) {
+		// frei0r filter instances are not thread-safe. Shotcut ignores that, so we'll
+		// deal with it by wrapping the execution in a mutex
+		std::lock_guard<std::mutex> guard(lock);
+
         interpolation = (int) interpolationParam;
         MPFilter::updateMP(this, time, out, in, width, height);
     }
-    
+
     virtual void updateLines(double time,
 	                    uint32_t* out,
                         const uint32_t* in, int start, int num) {
-        rect_to_eq_thread(out, (uint32_t*) in, start, num);     
+        rect_to_eq_thread(out, (uint32_t*) in, start, num);
     }
 
 protected:
     void rect_to_eq_thread(uint32_t* out, uint32_t* ibuf1, int start_scanline, int num_scanlines) {
-        
+
         int w = width;
         int h = height;
 
@@ -75,7 +84,7 @@ protected:
         if (max_x > w - 1) {
             max_x = w - 1;
         }
-        
+
         memset(&out[start_scanline * width], 0, num_scanlines * width * 4);
 
         for (yi = start_scanline; yi < start_scanline + num_scanlines; yi++) {
@@ -114,12 +123,12 @@ protected:
         }
     }
 
-    
+
 private:
-    
+
 };
 
 frei0r::construct<RectToEq> plugin("rect_to_eq",
                 "Converts a rectilinear image to an equirectangular map.",
                 "Leo Sutic <leo@sutic.nu>",
-                1, 0, F0R_COLOR_MODEL_PACKED32);
+                2, 0, F0R_COLOR_MODEL_PACKED32);

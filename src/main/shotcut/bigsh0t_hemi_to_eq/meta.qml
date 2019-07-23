@@ -5,8 +5,8 @@ import org.shotcut.qml 1.0
 Metadata {
     type: Metadata.Filter
     name: qsTr("Hemispherical to Equirectangular")
-    mlt_service: "frei0r.hemi_to_eq"
-    objectName: "hemi_to_eq"
+    mlt_service: "frei0r.bigsh0t_hemi_to_eq"
+    objectName: "bigsh0t_hemi_to_eq"
     qml: "ui.qml"
     keyframes {
         allowAnimateIn: true

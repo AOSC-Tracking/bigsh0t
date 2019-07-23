@@ -4,46 +4,46 @@ import org.shotcut.qml 1.0
 
 Metadata {
     type: Metadata.Filter
-    name: qsTr("Equirectangular to Rectilinear")
-    mlt_service: "frei0r.eq_to_rect"
-    objectName: "eq_to_rect"
+    name: qsTr("Equirectangular Mask")
+    mlt_service: "frei0r.bigsh0t_eq_mask"
+    objectName: "bigsh0t_eq_mask"
     qml: "ui.qml"
     keyframes {
         allowAnimateIn: true
         allowAnimateOut: true
-        simpleProperties: ['yaw', "pitch", "roll", "fov"]
+        simpleProperties: []
         parameters: [
             Parameter {
-                name: qsTr('Yaw')
-                property: 'yaw'
-                isSimple: true
-                isCurve: true
-                minimum: -360
-                maximum: 360
-            },
-            Parameter {
-                name: qsTr('Pitch')
-                property: 'pitch'
-                isSimple: true
-                isCurve: true
-                minimum: -180
-                maximum: 180
-            },
-            Parameter {
-                name: qsTr('Roll')
-                property: 'roll'
-                isSimple: true
-                isCurve: true
-                minimum: -180
-                maximum: 180
-            },
-            Parameter {
-                name: qsTr('FOV')
-                property: 'fov'
+                name: qsTr('hfov0')
+                property: 'hfov0'
                 isSimple: true
                 isCurve: true
                 minimum: 0
-                maximum: 180
+                maximum: 360
+            },
+            Parameter {
+                name: qsTr('hfov1')
+                property: 'hfov1'
+                isSimple: true
+                isCurve: true
+                minimum: 0
+                maximum: 360
+            },
+            Parameter {
+                name: qsTr('vfov0')
+                property: 'vfov0'
+                isSimple: true
+                isCurve: true
+                minimum: 0
+                maximum: 360
+            },
+            Parameter {
+                name: qsTr('vfov1')
+                property: 'vfov1'
+                isSimple: true
+                isCurve: true
+                minimum: 0
+                maximum: 360
             }
         ]
     }

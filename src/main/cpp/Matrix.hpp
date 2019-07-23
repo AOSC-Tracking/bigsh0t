@@ -52,6 +52,7 @@ private:
 
 typedef Matrix<3,3> Matrix3;
 typedef Matrix<1,3> Vector3;
+typedef Matrix<1,2> Vector2;
 
 void rotateX(Matrix3& m, double a);
 void rotateY(Matrix3& m, double a);

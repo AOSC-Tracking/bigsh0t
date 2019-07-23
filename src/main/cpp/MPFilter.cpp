@@ -14,11 +14,11 @@ void MPFilter::updateMP(MPFilter* filter, double time,
     for (int i = 0; i < numThreads; ++i) {
         int start = i * blockSize;
         int end = start + blockSize;
-        if (start <= height) {
+        if (start < height) {
             if (end > height) {
                 end = height;
             }
-            filter->updateLines(time, out, in, start, blockSize);
+            filter->updateLines(time, out, in, start, end - start);
         }
     }
 }

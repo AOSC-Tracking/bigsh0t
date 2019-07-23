@@ -4,14 +4,14 @@ import org.shotcut.qml 1.0
 
 Metadata {
     type: Metadata.Filter
-    name: qsTr("Transform 360")
-    mlt_service: "frei0r.transform_360"
-    objectName: "transform_360"
+    name: qsTr("Equirectangular to Rectilinear")
+    mlt_service: "frei0r.bigsh0t_eq_to_rect"
+    objectName: "bigsh0t_eq_to_rect"
     qml: "ui.qml"
     keyframes {
         allowAnimateIn: true
         allowAnimateOut: true
-        simpleProperties: ['yaw', "pitch", "roll"]
+        simpleProperties: ['yaw', "pitch", "roll", "fov"]
         parameters: [
             Parameter {
                 name: qsTr('Yaw')
@@ -35,6 +35,14 @@ Metadata {
                 isSimple: true
                 isCurve: true
                 minimum: -180
+                maximum: 180
+            },
+            Parameter {
+                name: qsTr('FOV')
+                property: 'fov'
+                isSimple: true
+                isCurve: true
+                minimum: 0
                 maximum: 180
             }
         ]
