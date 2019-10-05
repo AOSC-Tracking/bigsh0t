@@ -16,12 +16,14 @@ Item {
     PROPERTY_VARIABLES(pitch)
     PROPERTY_VARIABLES(roll)
     PROPERTY_VARIABLES(fov)
+	PROPERTY_VARIABLES(fisheye)
     PROPERTY_VARIABLES_COMBOBOX(interpolation)
     
     PROPERTY_CONNECTIONS(yaw)
     PROPERTY_CONNECTIONS(pitch)
     PROPERTY_CONNECTIONS(roll)
     PROPERTY_CONNECTIONS(fov)
+	PROPERTY_CONNECTIONS(fisheye)
     PROPERTY_CONNECTIONS_COMBOBOX(interpolation)
     
     Component.onCompleted: {
@@ -29,6 +31,7 @@ Item {
         ON_COMPLETED(pitch, 0)
         ON_COMPLETED(roll, 0)
         ON_COMPLETED(fov, 90)
+		ON_COMPLETED(fisheye, 0)
         ON_COMPLETED_COMBOBOX(interpolation, 1)
             
         if (filter.isNew) {
@@ -44,6 +47,7 @@ Item {
         SET_CONTROLS(pitch)
         SET_CONTROLS(roll)
         SET_CONTROLS(fov)
+		SET_CONTROLS(fisheye)
         SET_CONTROLS_COMBOBOX(interpolation)
         blockUpdate = false
     }
@@ -52,6 +56,7 @@ Item {
     UPDATE_PROPERTY(pitch)
     UPDATE_PROPERTY(roll)
     UPDATE_PROPERTY(fov)
+	UPDATE_PROPERTY(fisheye)
     UPDATE_PROPERTY_COMBOBOX(interpolation)
     
     function getPosition() {
@@ -69,13 +74,14 @@ Item {
         }
         Preset {
             id: preset
-            parameters: ["yaw", "pitch", "roll", "fov", "interpolation"]
+            parameters: ["yaw", "pitch", "roll", "fov", "interpolation", "fisheye"]
             Layout.columnSpan: 3
             onBeforePresetLoaded: {
                 filter.resetProperty('yaw')
                 filter.resetProperty('pitch')
                 filter.resetProperty('roll')
                 filter.resetProperty('fov')
+				filter.resetProperty('fisheye')
                 filter.resetProperty('interpolation')
             }
             onPresetSelected: {
@@ -83,6 +89,7 @@ Item {
                 LOAD_PRESET(pitch)
                 LOAD_PRESET(roll)
                 LOAD_PRESET(fov)
+				LOAD_PRESET(fisheye)
                 LOAD_PRESET_COMBOBOX(interpolation)
                 setControls(null);                
             }
@@ -168,7 +175,7 @@ Item {
         SliderSpinner {
             id: fovSlider
             minimumValue: 0
-            maximumValue: 180
+            maximumValue: 720
             suffix: ' deg'
             decimals: 3
             stepSize: 0.001
@@ -178,6 +185,25 @@ Item {
         UndoButton {
             id: fovUndo
             onClicked: fovSlider.value = 0
+        }
+
+		Label {
+            text: qsTr('Fisheye')
+            Layout.alignment: Qt.AlignRight
+        }
+        SliderSpinner {
+            id: fisheyeSlider
+            minimumValue: 0
+            maximumValue: 100
+            suffix: ' %'
+            decimals: 0
+            stepSize: 1
+            onValueChanged: updateProperty_fisheye(getPosition())
+        }
+        KEYFRAME_BUTTON(fisheye)
+        UndoButton {
+            id: fisheyeUndo
+            onClicked: fisheyeSlider.value = 0
         }
     }
         

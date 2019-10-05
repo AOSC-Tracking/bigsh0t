@@ -97,4 +97,4 @@ public:
 frei0r::construct<Transform360> plugin("transform_360",
                 "Rotates an equirectangular map.",
                 "Leo Sutic <leo@sutic.nu>",
-                2, 0, F0R_COLOR_MODEL_PACKED32);
+                2, 1, F0R_COLOR_MODEL_PACKED32);

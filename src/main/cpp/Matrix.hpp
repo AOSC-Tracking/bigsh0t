@@ -59,5 +59,7 @@ void rotateY(Matrix3& m, double a);
 void rotateZ(Matrix3& m, double a);
 
 void mulM3V3(Matrix3& m, Vector3& v, Vector3& out);
+void mulV3S(Vector3& v, double s, Vector3& out);
+void addV3V3(Vector3& u, Vector3& v, Vector3& out);
 
 #endif

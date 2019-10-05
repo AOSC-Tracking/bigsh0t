@@ -6,7 +6,7 @@ set (COMMON_FILES ${CPP_SOURCE}/Matrix.cpp ${CPP_SOURCE}/MPFilter.cpp ${CPP_SOUR
 set (FREI0R_HOME src/frei0r)
 set (PREPROCESSOR_COMMAND cat)
 set (DIST_NAME bigsh0t)
-set (DIST_VERSION 2.0)
+set (DIST_VERSION 2.1)
 set (DIST_PLATFORM unknown)
 
 if(APPLE)

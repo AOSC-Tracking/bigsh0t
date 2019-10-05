@@ -11,7 +11,7 @@ Metadata {
     keyframes {
         allowAnimateIn: true
         allowAnimateOut: true
-        simpleProperties: ['yaw', "pitch", "roll", "fov"]
+        simpleProperties: ['yaw', "pitch", "roll", "fov", "fisheye"]
         parameters: [
             Parameter {
                 name: qsTr('Yaw')
@@ -44,6 +44,14 @@ Metadata {
                 isCurve: true
                 minimum: 0
                 maximum: 180
+            },
+			Parameter {
+                name: qsTr('Fisheye')
+                property: 'fisheye'
+                isSimple: true
+                isCurve: true
+                minimum: 0
+                maximum: 100
             }
         ]
     }

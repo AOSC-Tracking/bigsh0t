@@ -113,6 +113,11 @@ void apply_360_map_tmpl(uint32_t* out, uint32_t* ibuf1, float* map, int width, i
 			int midx = 2 * idx;
 			float xt = map[midx];
 			float yt = map[midx + 1];
+			
+			if (xt < 0) {
+				out[idx] = 0;
+				continue;
+			}
 
 			uint32_t pixel;
             switch(interpolation) {

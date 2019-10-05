@@ -165,4 +165,4 @@ private:
 frei0r::construct<EqMask> plugin("eq_mask",
                 "Masks part of the VR sphere.",
                 "Leo Sutic <leo@sutic.nu>",
-                2, 0, F0R_COLOR_MODEL_RGBA8888);
+                2, 1, F0R_COLOR_MODEL_RGBA8888);

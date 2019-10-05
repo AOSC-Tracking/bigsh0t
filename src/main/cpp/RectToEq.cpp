@@ -131,4 +131,4 @@ private:
 frei0r::construct<RectToEq> plugin("rect_to_eq",
                 "Converts a rectilinear image to an equirectangular map.",
                 "Leo Sutic <leo@sutic.nu>",
-                2, 0, F0R_COLOR_MODEL_PACKED32);
+                2, 1, F0R_COLOR_MODEL_PACKED32);

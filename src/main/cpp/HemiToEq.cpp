@@ -305,4 +305,4 @@ private:
 frei0r::construct<HemiToEquirect> plugin("hemi_to_eq",
                 "Transforms dual-hemisphere video to equirectangular.",
                 "Leo Sutic <leo@sutic.nu>",
-                2, 0, F0R_COLOR_MODEL_PACKED32);
+                2, 1, F0R_COLOR_MODEL_PACKED32);

@@ -891,4 +891,4 @@ class Stabilize360 : public Frei0rFilter, MPFilter {
 frei0r::construct<Stabilize360> plugin("stabilize_360",
 "Stabilizes 360 equirectangular footage.",
 "Leo Sutic <leo@sutic.nu>",
-2, 0, F0R_COLOR_MODEL_PACKED32);
+2, 1, F0R_COLOR_MODEL_PACKED32);
