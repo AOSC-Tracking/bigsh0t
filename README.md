@@ -69,8 +69,9 @@ Converts an equirectangular frame (panoramic) to a rectilinear frame (what you'r
 #### Parameters
 
  * **interpolation**: Nearest-neighbor or bilinear. Determines the sampling method.
- * **fov**: The horizontal field of view, in degrees, of the resulting frame.
+ * **fov**: The horizontal field of view, in degrees, of the resulting frame. Any value over 179 results in a fisheye projection.
  * **yaw**, **pitch** and **roll**: The direction of the image center in the panorama.
+ * **fisheye**: The amount of fisheye to mix in. 100 means that you get a 100% fisheye lens.
 
 ### Transform 360
 
