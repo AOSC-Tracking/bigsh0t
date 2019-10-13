@@ -41,6 +41,8 @@ There is no installer. Depending on the platform you are on, you'll have to copy
 
 Assuming Shotcut is installed in `C:\Program Files\Shotcut`, copy the DLLs into `C:\Program Files\Shotcut\lib\frei0r-1` and everything in the `shotcut/filters` folder into `C:\Program Files\Shotcut\share\shotcut\qml\filters`.
 
+Download and install the [Visual C++ Redistributables](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads) from Microsoft. Since Bigsh0t is 64 bit, you want the [x64 (64 bit)](https://aka.ms/vs/16/release/vc_redist.x64.exe) package.
+
 ### OSX
 
 Assuming Shotcut is installed in `/Applications/Shotcut.app`, copy the `.so` files into `/Applications/Shotcut.app/Contents/MacOS/lib/frei0r-1` and everything in the `shotcut/filters` folder into `/Applications/Shotcut.app/Contents/MacOS/share/shotcut/qml/filters`.
