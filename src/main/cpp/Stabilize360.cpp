@@ -7,6 +7,7 @@
 #include <mutex>
 #include <fstream>
 #include <algorithm>
+#include <string.h>
 #include "frei0r.hpp"
 #include "Matrix.hpp"
 #include "MPFilter.hpp"
