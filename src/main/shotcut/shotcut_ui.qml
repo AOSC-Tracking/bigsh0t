@@ -114,13 +114,13 @@
 
 #define KEYFRAME_BUTTON(PROPERTY) KeyframesButton {\
             id: PROPERTY ## KeyframesButton;\
-            checked: filter.animateIn <= 0 && filter.animateOut <= 0 && filter.keyframeCount('yaw') > 0;\
+            checked: filter.animateIn <= 0 && filter.animateOut <= 0 && filter.keyframeCount(#PROPERTY) > 0;\
             onToggled: {\
                 var value = PROPERTY ## Slider.value;\
                 if (checked) {\
                     blockUpdate = true;\
                     if (filter.animateIn > 0 || filter.animateOut > 0) {\
-                        filter.resetProperty('yaw');\
+                        filter.resetProperty(#PROPERTY);\
                         PROPERTY ## Slider.enabled = true;\
                     }\
                     filter.clearSimpleAnimation(#PROPERTY);\
