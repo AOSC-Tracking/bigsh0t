@@ -47,6 +47,10 @@ Download and install the [Visual C++ Redistributables](https://support.microsoft
 
 Assuming Shotcut is installed in `/Applications/Shotcut.app`, copy the `.so` files into `/Applications/Shotcut.app/Contents/MacOS/lib/frei0r-1` and everything in the `shotcut/filters` folder into `/Applications/Shotcut.app/Contents/MacOS/share/shotcut/qml/filters`.
 
+### Linux
+
+Assuming Shotcut is installed in `/some/path/Shotcut.app`, copy the `.so` files into `/some/path/Shotcut.app/lib/frei0r-1` and everything in the `shotcut/filters` folder into `/some/path/Shotcut.app/share/shotcut/qml/filters`.
+
 ## Plugins
 
 ### Hemispherical to Equirectangular
