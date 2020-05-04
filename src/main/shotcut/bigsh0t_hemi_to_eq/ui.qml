@@ -207,9 +207,7 @@ Item {
             id: yawSlider
             minimumValue: -360
             maximumValue: 360
-            suffix: ' deg'
-            decimals: 3
-            stepSize: 0.001
+            DEG_SLIDER_SPINNER_PROPERTIES
             onValueChanged: updateProperty_yaw(getPosition())
         }
         KEYFRAME_BUTTON(yaw)
@@ -226,9 +224,7 @@ Item {
             id: pitchSlider
             minimumValue: -180
             maximumValue: 180
-            suffix: ' deg'
-            decimals: 3
-            stepSize: 0.001
+            DEG_SLIDER_SPINNER_PROPERTIES
             onValueChanged: updateProperty_pitch(getPosition())
         }
         KEYFRAME_BUTTON(pitch)
@@ -245,9 +241,7 @@ Item {
             id: rollSlider
             minimumValue: -180
             maximumValue: 180
-            suffix: ' deg'
-            decimals: 3
-            stepSize: 0.001
+            DEG_SLIDER_SPINNER_PROPERTIES
             onValueChanged: updateProperty_roll(getPosition())
         }
         KEYFRAME_BUTTON(roll)
@@ -286,6 +280,7 @@ Item {
             id: fovSlider
             minimumValue: 0
             maximumValue: 360
+            spinnerWidth: 120
             suffix: ' deg'
             decimals: 4
             stepSize: 0.0001
@@ -369,9 +364,7 @@ Item {
             id: frontUpSlider
             minimumValue: 0
             maximumValue: 360
-            stepSize: 0.001
-            decimals: 3
-            suffix: ' deg'
+            DEG_SLIDER_SPINNER_PROPERTIES
             onValueChanged: updateProperty_frontUp(getPosition())
         }
         KEYFRAME_BUTTON(frontUp)
@@ -433,9 +426,7 @@ Item {
             id: backUpSlider
             minimumValue: 0
             maximumValue: 360
-            stepSize: 0.001
-            decimals: 3
-            suffix: ' deg'
+            DEG_SLIDER_SPINNER_PROPERTIES
             onValueChanged: updateProperty_backUp(getPosition())
         }
         KEYFRAME_BUTTON(backUp)

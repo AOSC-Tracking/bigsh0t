@@ -98,9 +98,7 @@ Item {
             id: hfovSlider
             minimumValue: 0
             maximumValue: 180
-            suffix: ' deg'
-            decimals: 3
-            stepSize: 0.001
+            DEG_SLIDER_SPINNER_PROPERTIES
             onValueChanged: updateProperty_hfov(getPosition())
         }
         KEYFRAME_BUTTON(hfov)
@@ -117,9 +115,7 @@ Item {
             id: vfovSlider
             minimumValue: 0
             maximumValue: 180
-            suffix: ' deg'
-            decimals: 3
-            stepSize: 0.001
+            DEG_SLIDER_SPINNER_PROPERTIES
             onValueChanged: updateProperty_vfov(getPosition())
         }
         KEYFRAME_BUTTON(vfov)

@@ -105,9 +105,7 @@ Item {
             id: yawSlider
             minimumValue: -360
             maximumValue: 360
-            suffix: ' deg'
-            decimals: 3
-            stepSize: 0.001
+            DEG_SLIDER_SPINNER_PROPERTIES
             onValueChanged: updateProperty_yaw(getPosition())
         }
         KEYFRAME_BUTTON(yaw)
@@ -124,9 +122,7 @@ Item {
             id: pitchSlider
             minimumValue: -180
             maximumValue: 180
-            suffix: ' deg'
-            decimals: 3
-            stepSize: 0.001
+            DEG_SLIDER_SPINNER_PROPERTIES
             onValueChanged: updateProperty_pitch(getPosition())
         }
         KEYFRAME_BUTTON(pitch)
@@ -143,9 +139,7 @@ Item {
             id: rollSlider
             minimumValue: -180
             maximumValue: 180
-            suffix: ' deg'
-            decimals: 3
-            stepSize: 0.001
+            DEG_SLIDER_SPINNER_PROPERTIES
             onValueChanged: updateProperty_roll(getPosition())
         }
         KEYFRAME_BUTTON(roll)

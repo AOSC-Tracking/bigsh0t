@@ -6,7 +6,7 @@ set (COMMON_FILES ${CPP_SOURCE}/Matrix.cpp ${CPP_SOURCE}/MPFilter.cpp ${CPP_SOUR
 set (FREI0R_HOME src/frei0r)
 set (PREPROCESSOR_COMMAND cat)
 set (DIST_NAME bigsh0t)
-set (DIST_VERSION 2.1)
+set (DIST_VERSION 2.1.1)
 set (DIST_PLATFORM unknown)
 
 if(APPLE)
@@ -71,6 +71,7 @@ add_custom_target(create_tar ALL
 	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_NAME:bigsh0t_stabilize_360> ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}/lib/frei0r-1
 
     COMMAND ${CMAKE_COMMAND} -E tar "cfvz" "${PACKAGE_NAME}.tar.gz" ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}
+	COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${PACKAGE_NAME}.zip" --format=zip ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}
 )
 
 build_plugin(bigsh0t_hemi_to_eq HemiToEq.cpp)

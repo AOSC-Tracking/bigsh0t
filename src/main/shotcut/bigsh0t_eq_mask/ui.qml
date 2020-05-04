@@ -95,15 +95,13 @@ Item {
             id: hfov0Slider
             minimumValue: 0
             maximumValue: 360
-            suffix: ' deg'
-            decimals: 3
-            stepSize: 1
+            DEG_SLIDER_SPINNER_PROPERTIES
             onValueChanged: updateProperty_hfov0(getPosition())
         }
         KEYFRAME_BUTTON(hfov0)
         UndoButton {
             id: hfov0Undo
-            onClicked: hfov0Slider.value = 0
+            onClicked: hfov0Slider.value = 180
         }
         
         Label {
@@ -114,15 +112,13 @@ Item {
             id: hfov1Slider
             minimumValue: 0
             maximumValue: 360
-            suffix: ' deg'
-            decimals: 3
-            stepSize: 1
+            DEG_SLIDER_SPINNER_PROPERTIES
             onValueChanged: updateProperty_hfov1(getPosition())
         }
         KEYFRAME_BUTTON(hfov1)
         UndoButton {
             id: hfov1Undo
-            onClicked: hfov1Slider.value = 0
+            onClicked: hfov1Slider.value = 200
         }
         
         Label {
@@ -139,15 +135,13 @@ Item {
             id: vfov0Slider
             minimumValue: 0
             maximumValue: 360
-            suffix: ' deg'
-            decimals: 3
-            stepSize: 1
+            DEG_SLIDER_SPINNER_PROPERTIES
             onValueChanged: updateProperty_vfov0(getPosition())
         }
         KEYFRAME_BUTTON(vfov0)
         UndoButton {
             id: vfov0Undo
-            onClicked: vfov0Slider.value = 0
+            onClicked: vfov0Slider.value = 140
         }
         
         Label {
@@ -158,15 +152,13 @@ Item {
             id: vfov1Slider
             minimumValue: 0
             maximumValue: 360
-            suffix: ' deg'
-            decimals: 3
-            stepSize: 1
+            DEG_SLIDER_SPINNER_PROPERTIES
             onValueChanged: updateProperty_vfov1(getPosition())
         }
         KEYFRAME_BUTTON(vfov1)
         UndoButton {
             id: vfov1Undo
-            onClicked: vfov1Slider.value = 0
+            onClicked: vfov1Slider.value = 160
         }
     }
         

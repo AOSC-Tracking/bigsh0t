@@ -45,7 +45,11 @@ Download and install the [Visual C++ Redistributables](https://support.microsoft
 
 ### OSX
 
-Assuming Shotcut is installed in `/Applications/Shotcut.app`, copy the `.so` files into `/Applications/Shotcut.app/Contents/MacOS/lib/frei0r-1` and everything in the `shotcut/filters` folder into `/Applications/Shotcut.app/Contents/MacOS/share/shotcut/qml/filters`.
+Install OpenMP. Using [Homebrew](https://brew.sh/):
+
+    brew install libomp
+
+Assuming Shotcut is installed in `/Applications/Shotcut.app`, copy the `.so` files into `/Applications/Shotcut.app/Contents/PlugIns/frei0r-1` and everything in the `shotcut/filters` folder into `/Applications/Shotcut.app/Contents/MacOS/share/shotcut/qml/filters`.
 
 ### Linux
 

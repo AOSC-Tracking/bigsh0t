@@ -86,9 +86,9 @@ class RotationSamples {
 			return;
 		}
 		size_t pos = 0;
-		for (size_t i = rotations.size() - 1; i >= 0; --i) {
-			if (rotations[i].time < rot.time) {
-				pos = i + 1;
+		for (size_t i = rotations.size(); i > 0; --i) {
+			if (rotations[i - 1].time < rot.time) {
+				pos = i;
 				break;
 			}
 		}
@@ -102,9 +102,9 @@ class RotationSamples {
 	Rotation getMax () {
 		Rotation m (0, 0, 0, 0, 0);
 		for (Rotation& r : rotations) {
-			double ay = abs(r.yaw);
-			double ap = abs(r.pitch);
-			double ar = abs(r.roll);
+			double ay = std::abs(r.yaw);
+			double ap = std::abs(r.pitch);
+			double ar = std::abs(r.roll);
 			if (ay > m.yaw) {
 				m.yaw = ay;
 			}

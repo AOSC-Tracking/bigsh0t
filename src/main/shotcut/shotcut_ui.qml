@@ -193,3 +193,7 @@ if (filter.animateOut > 0) { \
 
 #define SET_CONTROLS_TEXTFIELD(PROPERTY) PROPERTY ## TextField.text = filter.get(#PROPERTY)
 
+#define DEG_SLIDER_SPINNER_PROPERTIES spinnerWidth: 120; \
+            suffix: ' deg'; \
+            decimals: 3; \
+            stepSize: 1;
