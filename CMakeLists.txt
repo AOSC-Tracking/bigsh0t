@@ -24,8 +24,8 @@ if(MSVC)
     set (CMAKE_MODULE_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS_INIT} /DEF:${PROJECT_SOURCE_DIR}/${FREI0R_HOME}/msvc/frei0r_1_0.def")
 endif()
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    set (DIST_PLATFORM linux)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    string(TOLOWER ${CMAKE_SYSTEM_NAME} DIST_PLATFORM)
     add_compile_options(-std=c++11 -fopenmp)
     set (PREPROCESSOR_COMMAND gcc -E -P -I${PROJECT_SOURCE_DIR}/src/main/shotcut/bigsh0t_transform_360/ - <)
 endif()
@@ -49,7 +49,7 @@ macro (build_plugin plugin main_source)
     if(APPLE)
         target_link_options(${plugin} PUBLIC "-lomp")
     endif()
-    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         target_link_options(${plugin} PUBLIC "-fopenmp")
     endif()
     set_target_properties(${plugin} PROPERTIES PREFIX "")
@@ -68,10 +68,10 @@ add_custom_target(create_tar ALL
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_NAME:bigsh0t_rect_to_eq> ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}/lib/frei0r-1
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_NAME:bigsh0t_transform_360> ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}/lib/frei0r-1
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_NAME:bigsh0t_eq_to_rect> ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}/lib/frei0r-1
-	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_NAME:bigsh0t_stabilize_360> ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}/lib/frei0r-1
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_NAME:bigsh0t_stabilize_360> ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}/lib/frei0r-1
 
     COMMAND ${CMAKE_COMMAND} -E tar "cfvz" "${PACKAGE_NAME}.tar.gz" ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}
-	COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${PACKAGE_NAME}.zip" --format=zip ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}
+    COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${PACKAGE_NAME}.zip" --format=zip ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}
 )
 
 build_plugin(bigsh0t_hemi_to_eq HemiToEq.cpp)
