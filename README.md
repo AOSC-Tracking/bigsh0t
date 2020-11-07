@@ -158,7 +158,7 @@ When you switch to analysis mode, the filter will overlay information on the vid
 
  * **File**: Path to file that will be used to store the analysis data.
 
- * **Start Offset**: The offset into the stabilization file that corresponds to the start of this clip. Press the **Undo** button to set it from Shotcut timeline. For example, if you have a 30 second clip, split it into three clips of 10 seconds each, then the start offsets should be 0s, 10
+ * **Start Offset**: The offset into the stabilization file that corresponds to the start of this clip. Press the **Undo** button to set it from Shotcut timeline. For example, if you have a 30 second clip, analyze it all, and then split it into three clips of 10 seconds each, then the start offsets should be 0s, 10s, and 20s.
 
  * **Interpolation**: Output quality.
 
