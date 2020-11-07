@@ -13,6 +13,8 @@
 
 #define PROPERTY_VARIABLES_TEXTFIELD(PROPERTY) property string PROPERTY ## Value : "";
 
+#define PROPERTY_VARIABLES_TEXTFIELD_NUM(PROPERTY) property double PROPERTY ## Value : 0.0;
+
 #define PROPERTY_CONNECTIONS(PROPERTY) Connections {\
         target: filter; \
         onChanged: setControls(); \
@@ -51,6 +53,11 @@
     }
 
 #define PROPERTY_CONNECTIONS_TEXTFIELD(PROPERTY) Connections {\
+        target: filter; \
+        onChanged: setControls(); \
+    }
+
+#define PROPERTY_CONNECTIONS_TEXTFIELD_NUM(PROPERTY) Connections {\
         target: filter; \
         onChanged: setControls(); \
     }
@@ -112,6 +119,13 @@
         filter.set(#PROPERTY, value);\
     }
 
+#define UPDATE_PROPERTY_TEXTFIELD_NUM(PROPERTY) function updateProperty_ ## PROPERTY () {\
+        if (blockUpdate) return;\
+        var value = parseFloat(PROPERTY ## TextField.text);\
+		console.log(value); \
+        filter.set(#PROPERTY, value);\
+    }
+
 #define KEYFRAME_BUTTON(PROPERTY) KeyframesButton {\
             id: PROPERTY ## KeyframesButton;\
             checked: filter.animateIn <= 0 && filter.animateOut <= 0 && filter.keyframeCount(#PROPERTY) > 0;\
@@ -151,6 +165,12 @@
     PROPERTY ## Value = filter.get(#PROPERTY); \
 }
 
+#define ON_COMPLETED_TEXTFIELD_NUM(PROPERTY,DEFAULT_VALUE) if (filter.isNew) {\
+    filter.set(#PROPERTY, DEFAULT_VALUE); \
+} else { \
+    PROPERTY ## Value = filter.getDouble(#PROPERTY); \
+}
+
 #define ON_COMPLETED_STATIC(PROPERTY,DEFAULT_VALUE) if (filter.isNew) {\
     filter.set(#PROPERTY, DEFAULT_VALUE); \
 } else { \
@@ -183,6 +203,8 @@ if (filter.animateOut > 0) { \
 
 #define LOAD_PRESET_TEXTFIELD(PROPERTY) PROPERTY ## Value = filter.get(#PROPERTY);
 
+#define LOAD_PRESET_TEXTFIELD_NUM(PROPERTY) PROPERTY ## Value = filter.get(#PROPERTY);
+
 #define SET_CONTROLS(PROPERTY) PROPERTY ## Slider.value = filter.getDouble(#PROPERTY, position)
 
 #define SET_CONTROLS_STATIC(PROPERTY) PROPERTY ## Slider.value = filter.getDouble(#PROPERTY)
@@ -192,6 +214,8 @@ if (filter.animateOut > 0) { \
 #define SET_CONTROLS_CHECKBOX(PROPERTY) PROPERTY ## CheckBox.checked = filter.get(#PROPERTY) == '1';
 
 #define SET_CONTROLS_TEXTFIELD(PROPERTY) PROPERTY ## TextField.text = filter.get(#PROPERTY)
+
+#define SET_CONTROLS_TEXTFIELD_NUM(PROPERTY) PROPERTY ## TextField.text = filter.getDouble(#PROPERTY).toFixed(4);
 
 #define DEG_SLIDER_SPINNER_PROPERTIES spinnerWidth: 120; \
             suffix: ' deg'; \

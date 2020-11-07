@@ -10,7 +10,7 @@ import Shotcut.Controls 1.0
 
 Item {
     width: 350
-    height: 100
+    height: 550 /* 22 rows of 25 pixels */
     property bool blockUpdate: true
     
 	PROPERTY_VARIABLES_COMBOBOX(interpolation)
@@ -19,6 +19,7 @@ Item {
 	PROPERTY_VARIABLES_STATIC(searchRadius)
 	PROPERTY_VARIABLES_STATIC(offset)
 	PROPERTY_VARIABLES_TEXTFIELD(analysisFile)
+	PROPERTY_VARIABLES_TEXTFIELD_NUM(clipOffset)
 	PROPERTY_VARIABLES_CHECKBOX(useBackTrackpoints)
 	PROPERTY_VARIABLES_STATIC(stabilizeYaw)
 	PROPERTY_VARIABLES_STATIC(stabilizePitch)
@@ -36,6 +37,7 @@ Item {
 	PROPERTY_CONNECTIONS_STATIC(searchRadius)
 	PROPERTY_CONNECTIONS_STATIC(offset)
 	PROPERTY_CONNECTIONS_TEXTFIELD(analysisFile)
+	PROPERTY_CONNECTIONS_TEXTFIELD_NUM(clipOffset)
 	PROPERTY_CONNECTIONS_CHECKBOX(useBackTrackpoints)
 	PROPERTY_CONNECTIONS_STATIC(stabilizeYaw)
 	PROPERTY_CONNECTIONS_STATIC(stabilizePitch)
@@ -54,6 +56,7 @@ Item {
 		ON_COMPLETED_STATIC(searchRadius, 24)
 		ON_COMPLETED_STATIC(offset, 64)
 		ON_COMPLETED_TEXTFIELD(analysisFile, "")
+		ON_COMPLETED_TEXTFIELD_NUM(clipOffset, 0)
 		ON_COMPLETED_CHECKBOX(useBackTrackpoints, false)
 
 		ON_COMPLETED_STATIC(stabilizeYaw, 100)
@@ -81,6 +84,7 @@ Item {
 		SET_CONTROLS_STATIC(searchRadius)
 		SET_CONTROLS_STATIC(offset)
 		SET_CONTROLS_TEXTFIELD(analysisFile)
+		SET_CONTROLS_TEXTFIELD_NUM(clipOffset)
 		SET_CONTROLS_CHECKBOX(useBackTrackpoints)
 		SET_CONTROLS_STATIC(stabilizeYaw)
 		SET_CONTROLS_STATIC(stabilizePitch)
@@ -101,6 +105,7 @@ Item {
 	UPDATE_PROPERTY_STATIC(searchRadius)
 	UPDATE_PROPERTY_STATIC(offset)
 	UPDATE_PROPERTY_TEXTFIELD(analysisFile)
+	UPDATE_PROPERTY_TEXTFIELD_NUM(clipOffset)
 	UPDATE_PROPERTY_CHECKBOX(useBackTrackpoints)
 	UPDATE_PROPERTY_STATIC(stabilizeYaw)
 	UPDATE_PROPERTY_STATIC(stabilizePitch)
@@ -115,6 +120,14 @@ Item {
     
     function getPosition() {
         return Math.max(producer.position - (filter.in - producer.in), 0)
+    }
+
+	function getFrameRate() {
+		return producer.getDouble("meta.media.frame_rate_num", getPosition()) / producer.getDouble("meta.media.frame_rate_den", getPosition())
+	}
+
+	function getClipOffset() {
+        return filter.in
     }
 
 	FileDialog {
@@ -143,6 +156,11 @@ Item {
 			selectAnalysisFile.open()
 		}
 		updateProperty_analyze()
+	}
+
+	function onClipOffsetUndo() {
+		clipOffsetTextField.text = (getClipOffset() / getFrameRate()).toFixed(4)
+		updateProperty_clipOffset()
 	}
     
     GridLayout {
@@ -225,6 +243,23 @@ Item {
 		    implicitHeight: 20
             onClicked: selectAnalysisFile.open()
 		}
+
+		Label {
+            text: qsTr('Start Offset')
+            Layout.alignment: Qt.AlignRight
+        }
+        TextField {
+			text: qsTr("0")
+            id: clipOffsetTextField
+            Layout.columnSpan: 2
+			Layout.fillWidth: true
+            Layout.alignment: Qt.AlignLeft
+			onEditingFinished: updateProperty_clipOffset()
+        }
+		UndoButton {
+            id: clipOffsetUndo
+            onClicked: onClipOffsetUndo()
+        }
 
         Label {
             text: qsTr('Interpolation')

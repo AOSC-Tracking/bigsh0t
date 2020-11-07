@@ -28,13 +28,15 @@ class Rotation {
 	double yaw;
 	double pitch;
 	double roll;
+	bool updated;
 
-	Rotation (double previousTime, double time, double yaw, double pitch, double roll) {
+	Rotation (double previousTime, double time, double yaw, double pitch, double roll, bool updated) {
 		this->previousTime = previousTime;
 		this->time = time;
 		this->yaw = yaw;
 		this->pitch = pitch;
 		this->roll = roll;
+		this->updated = updated;
 	}
 
 	~Rotation() {
@@ -72,6 +74,7 @@ class Rotation {
 		file.read ((char*) &yaw, sizeof(yaw));
 		file.read ((char*) &pitch, sizeof(pitch));
 		file.read ((char*) &roll, sizeof(roll));
+		this->updated = false;
 	}
 };
 
@@ -100,7 +103,7 @@ class RotationSamples {
 	}
 
 	Rotation getMax () {
-		Rotation m (0, 0, 0, 0, 0);
+		Rotation m (0, 0, 0, 0, 0, false);
 		for (Rotation& r : rotations) {
 			double ay = std::abs(r.yaw);
 			double ap = std::abs(r.pitch);
@@ -194,6 +197,16 @@ class RotationSamples {
 		}
 	}
 	
+	bool hasOverlapping (const Rotation& r) {
+		for (int i = ((int) rotations.size()) - 1; i >= 0; --i) {
+			Rotation r2 = rotations[i];
+			if (r.spanOverlaps (r2)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	int findFirstSkip () {
 		if (size () < 2) {
 			return -1;
@@ -257,7 +270,7 @@ class RotationSamples {
 			uint64_t s = 0;
 			file.read ((char*) &s, sizeof(s));
 			for (int i = 0; i < s; ++i) {
-				Rotation r(0, 0, 0, 0, 0);
+				Rotation r(0, 0, 0, 0, 0, false);
 				r.readFrom (file);
 				rotations.push_back (r);
 			}
@@ -300,13 +313,13 @@ class RotationSamples {
 	void correct (int wYaw, int wPitch, int wRoll, double bYaw, double bPitch, double bRoll, RotationSamples& dest) {
 		std::vector<Rotation> accs;
 		{
-			Rotation acc (0, 0, 0, 0, 0);
+			Rotation acc (0, 0, 0, 0, 0, false);
 			for (Rotation& r : rotations) {
 				acc.yaw += r.yaw;
 				acc.pitch += r.pitch;
 				acc.roll += r.roll;
 
-				Rotation r2 (r.previousTime, r.time, acc.yaw, acc.pitch, acc.roll);
+				Rotation r2 (r.previousTime, r.time, acc.yaw, acc.pitch, acc.roll, false);
 				accs.push_back(r2);
 			}
 		}
@@ -328,7 +341,7 @@ class RotationSamples {
 			for (int i = 0; i < accs.size(); ++i) {
 				Rotation& r = accs[i];
 				
-				Rotation smooth (r.previousTime, r.time, cYaw[i], cPitch[i], cRoll[i]);
+				Rotation smooth (r.previousTime, r.time, cYaw[i], cPitch[i], cRoll[i], false);
 
 				smooths.push_back (smooth);
 			}
@@ -338,8 +351,23 @@ class RotationSamples {
 			Rotation& measured = accs[i];
 			Rotation& smoothed = smooths[i];
 
-			Rotation correction (measured.previousTime, measured.time, smoothed.yaw - measured.yaw, smoothed.pitch - measured.pitch, smoothed.roll - measured.roll);
+			Rotation correction (measured.previousTime, measured.time, smoothed.yaw - measured.yaw, smoothed.pitch - measured.pitch, smoothed.roll - measured.roll, false);
 			dest.add(correction);
+		}
+	}
+	
+	void merge (RotationSamples& other) {
+		for (size_t i = 0; i < other.rotations.size(); ++i) {
+			const Rotation& otherRot = other.rotations[i];
+			if (otherRot.updated || !hasOverlapping(otherRot)) {
+				add(otherRot);
+			}
+		}
+	}
+	
+	void clearUpdated () {
+		for (Rotation& r : rotations) {
+			r.updated = false;
 		}
 	}
 };
@@ -590,6 +618,7 @@ class Stabilize360 : public Frei0rFilter, MPFilter {
 	Frei0rParameter<double,double> timeBiasRoll;
 
 	std::string analysisFile;
+	Frei0rParameter<double,double> clipOffset;
 
 	uint32_t* previousFrame;
 	double previousFrameTime;
@@ -626,6 +655,7 @@ class Stabilize360 : public Frei0rFilter, MPFilter {
 		smoothRoll = 120;
 		
 		register_param(analysisFile, "analysisFile", "");
+		register_fparam(clipOffset, "clipOffset", "");
 		register_fparam(interpolation, "interpolation", "");
 		register_param(analyze, "analyze", "");
 		register_fparam(sampleRadius, "sampleRadius", "");
@@ -692,7 +722,13 @@ class Stabilize360 : public Frei0rFilter, MPFilter {
 
 	virtual void endAnalyze() {
 		if (!analysisFile.empty() && rawSamples.size() > 0) {
-			rawSamples.write (analysisFile);
+			RotationSamples onDisk;
+			onDisk.read (analysisFile);
+			onDisk.merge (rawSamples);
+			onDisk.write (analysisFile);
+			
+			rawSamples.clear ();
+			rawSamples.read (analysisFile);
 		}
 	}
 
@@ -724,8 +760,10 @@ class Stabilize360 : public Frei0rFilter, MPFilter {
 		// frei0r filter instances are not thread-safe. Shotcut ignores that, so we'll
 		// deal with it by wrapping the execution in a mutex
 		std::lock_guard<std::mutex> guard(lock);
+		
+		double clipTime = time + clipOffset;
 
-		updateAnalyzeState (time, out, in);
+		updateAnalyzeState (clipTime, out, in);
 
 		if (analyze) {
 			TrackPointMatrix trackAhead (        width / 2, height / 2, 3, 3, offset, sampleRadius, searchRadius);
@@ -740,7 +778,7 @@ class Stabilize360 : public Frei0rFilter, MPFilter {
 			Graphics preXform (intermediateFrame, width, height);
 
 			bool updated = false;
-			if (previousFrame != NULL && previousFrameTime < time) {
+			if (previousFrame != NULL && previousFrameTime < clipTime) {
 				trackAhead.update(preXform, previousFrame, in);
 				trackLeft.update(preXform, previousFrame, in);
 				trackRight.update(preXform, previousFrame, in);
@@ -775,7 +813,7 @@ class Stabilize360 : public Frei0rFilter, MPFilter {
 
 				view (-dYaw, -dPitch, -dRoll);
 
-				rawSamples.add (Rotation (previousFrameTime + ROTATION_TIME_INSTANT, time, dYaw, dPitch, dRoll));
+				rawSamples.add (Rotation (previousFrameTime + ROTATION_TIME_INSTANT, clipTime, dYaw, dPitch, dRoll, true));
 			} else {
 				view (0, 0, 0);
 			}
@@ -815,7 +853,7 @@ class Stabilize360 : public Frei0rFilter, MPFilter {
 			if (diagramHeight > height / 4) {
 				diagramHeight = diagramHeight;
 			}
-			rawSamples.drawDiagram (postXform, time, width / 2, 3 * height / 4, diagramWidth, diagramHeight);
+			rawSamples.drawDiagram (postXform, clipTime, width / 2, 3 * height / 4, diagramWidth, diagramHeight);
 
 			char buf[1024];
 			size_t frames = rawSamples.size();
@@ -830,10 +868,10 @@ class Stabilize360 : public Frei0rFilter, MPFilter {
 			}
 			snprintf (buf, 1024,
 			"%s\n"
-			"At %.2f s. %zd frames, from %.2f s to %.2f s\n"
+			"At %.2fs (%.2fs) %zd frames, from %.2f s to %.2f s\n"
 			"%s\n"
 			"Last frame motion: (%.3f, %.3f, %.3f)", analysisFile.c_str(), 
-			time, 
+			clipTime, time,
 			frames, earliest, latest, skipBuf,
 			yaw, pitch, roll);
 			std::string status(buf);
@@ -842,7 +880,7 @@ class Stabilize360 : public Frei0rFilter, MPFilter {
 
 			free (intermediateFrame);
 
-			previousFrameTime = time;
+			previousFrameTime = clipTime;
 			if (previousFrame == NULL) {
 				previousFrame = (uint32_t*) malloc(width * height * sizeof(uint32_t));
 			}
@@ -853,7 +891,7 @@ class Stabilize360 : public Frei0rFilter, MPFilter {
 				updateCorrections();
 			}
 				
-			int correctionIndex = corrections.indexOf (time);
+			int correctionIndex = corrections.indexOf (clipTime);
 			if (correctionIndex >= 0) {
 				Rotation correction = corrections[correctionIndex];
 				view (
@@ -892,4 +930,4 @@ class Stabilize360 : public Frei0rFilter, MPFilter {
 frei0r::construct<Stabilize360> plugin("stabilize_360",
 "Stabilizes 360 equirectangular footage.",
 "Leo Sutic <leo@sutic.nu>",
-2, 1, F0R_COLOR_MODEL_PACKED32);
+2, 2, F0R_COLOR_MODEL_PACKED32);

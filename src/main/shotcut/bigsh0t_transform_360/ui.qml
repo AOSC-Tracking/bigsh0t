@@ -9,24 +9,27 @@ import Shotcut.Controls 1.0
 
 Item {
     width: 350
-    height: 100
+    height: 125 /* 5 rows of 25 pixels */
     property bool blockUpdate: true
     
     PROPERTY_VARIABLES(yaw)
     PROPERTY_VARIABLES(pitch)
     PROPERTY_VARIABLES(roll)
     PROPERTY_VARIABLES_COMBOBOX(interpolation)
+    PROPERTY_VARIABLES_CHECKBOX(grid)
     
     PROPERTY_CONNECTIONS(yaw)
     PROPERTY_CONNECTIONS(pitch)
     PROPERTY_CONNECTIONS(roll)
     PROPERTY_CONNECTIONS_COMBOBOX(interpolation)
+    PROPERTY_CONNECTIONS_CHECKBOX(grid)
     
     Component.onCompleted: {
         ON_COMPLETED(yaw, 0)
         ON_COMPLETED(pitch, 0)
         ON_COMPLETED(roll, 0)
         ON_COMPLETED_COMBOBOX(interpolation, 1)
+        ON_COMPLETED_CHECKBOX(grid, false)
             
         if (filter.isNew) {
             filter.savePreset(preset.parameters)
@@ -41,6 +44,7 @@ Item {
         SET_CONTROLS(pitch)
         SET_CONTROLS(roll)
         SET_CONTROLS_COMBOBOX(interpolation)
+        SET_CONTROLS_CHECKBOX(grid)
         blockUpdate = false
     }
     
@@ -48,6 +52,7 @@ Item {
     UPDATE_PROPERTY(pitch)
     UPDATE_PROPERTY(roll)
     UPDATE_PROPERTY_COMBOBOX(interpolation)
+    UPDATE_PROPERTY_CHECKBOX(grid)
     
     function getPosition() {
         return Math.max(producer.position - (filter.in - producer.in), 0)
@@ -147,6 +152,20 @@ Item {
             id: rollUndo
             onClicked: rollSlider.value = 0
         }
+
+        Label {
+            text: qsTr('Grid')
+            Layout.alignment: Qt.AlignRight
+        }
+        CheckBox {
+            text: qsTr('Show')
+            checked: false
+            partiallyCheckedEnabled: false
+            id: gridCheckBox
+            Layout.columnSpan: 3
+            onCheckedChanged: updateProperty_grid()
+        }
+
     }
         
     Connections {

@@ -214,4 +214,4 @@ private:
 frei0r::construct<EqToRect> plugin("eq_to_rect",
                 "Extracts a rectilinear image from an equirectangular.",
                 "Leo Sutic <leo@sutic.nu>",
-                2, 1, F0R_COLOR_MODEL_PACKED32);
+                2, 2, F0R_COLOR_MODEL_PACKED32);

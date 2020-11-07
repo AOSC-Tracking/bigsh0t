@@ -9,7 +9,7 @@ import Shotcut.Controls 1.0
 
 Item {
     width: 350
-    height: 100
+    height: 100 /* 4 rows of 25 pixels */
     property bool blockUpdate: true
 
     PROPERTY_VARIABLES(hfov)
