@@ -158,6 +158,8 @@ When you switch to analysis mode, the filter will overlay information on the vid
 
  * **File**: Path to file that will be used to store the analysis data.
 
+ * **Start Offset**: The offset into the stabilization file that corresponds to the start of this clip. Press the **Undo** button to set it from Shotcut timeline. For example, if you have a 30 second clip, split it into three clips of 10 seconds each, then the start offsets should be 0s, 10
+
  * **Interpolation**: Output quality.
 
  * **Analysis: Sample Radius**: The radius of the square that the stabilizer will sample.
@@ -172,4 +174,4 @@ When you switch to analysis mode, the filter will overlay information on the vid
 
  * **Yaw / Pitch / Roll: Smoothing**: The number of frames to use to smooth out the shakes. The higher the value, the slower the camera will follow any intended motion.
 
- * **Yaw / Pitch / Roll: Time Bias**: Shift the frames used to smooth out the shakes relative to the stabilizaed frame. A value less than zero will give more weight to past frames, and the camera will seem to lag behind intended movement. A value greater than zero will give more weight to future frames, and the camera will appear to move ahead of the intended camera movement. A value of zero should make the camera follow the intended path.
+ * **Yaw / Pitch / Roll: Time Bias**: Shift the frames used to smooth out the shakes relative to the stabilized frame. A value less than zero will give more weight to past frames, and the camera will seem to lag behind intended movement. A value greater than zero will give more weight to future frames, and the camera will appear to move ahead of the intended camera movement. A value of zero should make the camera follow the intended path.
