@@ -10,64 +10,67 @@ import Shotcut.Controls 1.0
 
 Item {
     width: 350
-    height: 550 /* 22 rows of 25 pixels */
+    height: 575 /* 23 rows of 25 pixels */
     property bool blockUpdate: true
     
-	PROPERTY_VARIABLES_COMBOBOX(interpolation)
+    PROPERTY_VARIABLES_COMBOBOX(interpolation)
     PROPERTY_VARIABLES_CHECKBOX(analyze)
-	PROPERTY_VARIABLES_STATIC(sampleRadius)
-	PROPERTY_VARIABLES_STATIC(searchRadius)
-	PROPERTY_VARIABLES_STATIC(offset)
-	PROPERTY_VARIABLES_TEXTFIELD(analysisFile)
-	PROPERTY_VARIABLES_TEXTFIELD_NUM(clipOffset)
-	PROPERTY_VARIABLES_CHECKBOX(useBackTrackpoints)
-	PROPERTY_VARIABLES_STATIC(stabilizeYaw)
-	PROPERTY_VARIABLES_STATIC(stabilizePitch)
-	PROPERTY_VARIABLES_STATIC(stabilizeRoll)
-	PROPERTY_VARIABLES_STATIC(smoothYaw)
-	PROPERTY_VARIABLES_STATIC(smoothPitch)
-	PROPERTY_VARIABLES_STATIC(smoothRoll)
-	PROPERTY_VARIABLES_STATIC(timeBiasYaw)
-	PROPERTY_VARIABLES_STATIC(timeBiasPitch)
-	PROPERTY_VARIABLES_STATIC(timeBiasRoll)
+    PROPERTY_VARIABLES_CHECKBOX(transformWhenAnalyzing)
+    PROPERTY_VARIABLES_STATIC(sampleRadius)
+    PROPERTY_VARIABLES_STATIC(searchRadius)
+    PROPERTY_VARIABLES_STATIC(offset)
+    PROPERTY_VARIABLES_TEXTFIELD(analysisFile)
+    PROPERTY_VARIABLES_TEXTFIELD_NUM(clipOffset)
+    PROPERTY_VARIABLES_CHECKBOX(useBackTrackpoints)
+    PROPERTY_VARIABLES_STATIC(stabilizeYaw)
+    PROPERTY_VARIABLES_STATIC(stabilizePitch)
+    PROPERTY_VARIABLES_STATIC(stabilizeRoll)
+    PROPERTY_VARIABLES_STATIC(smoothYaw)
+    PROPERTY_VARIABLES_STATIC(smoothPitch)
+    PROPERTY_VARIABLES_STATIC(smoothRoll)
+    PROPERTY_VARIABLES_STATIC(timeBiasYaw)
+    PROPERTY_VARIABLES_STATIC(timeBiasPitch)
+    PROPERTY_VARIABLES_STATIC(timeBiasRoll)
     
     PROPERTY_CONNECTIONS_COMBOBOX(interpolation)
     PROPERTY_CONNECTIONS_CHECKBOX(analyze)
-	PROPERTY_CONNECTIONS_STATIC(sampleRadius)
-	PROPERTY_CONNECTIONS_STATIC(searchRadius)
-	PROPERTY_CONNECTIONS_STATIC(offset)
-	PROPERTY_CONNECTIONS_TEXTFIELD(analysisFile)
-	PROPERTY_CONNECTIONS_TEXTFIELD_NUM(clipOffset)
-	PROPERTY_CONNECTIONS_CHECKBOX(useBackTrackpoints)
-	PROPERTY_CONNECTIONS_STATIC(stabilizeYaw)
-	PROPERTY_CONNECTIONS_STATIC(stabilizePitch)
-	PROPERTY_CONNECTIONS_STATIC(stabilizeRoll)
-	PROPERTY_CONNECTIONS_STATIC(smoothYaw)
-	PROPERTY_CONNECTIONS_STATIC(smoothPitch)
-	PROPERTY_CONNECTIONS_STATIC(smoothRoll)
-	PROPERTY_CONNECTIONS_STATIC(timeBiasYaw)
-	PROPERTY_CONNECTIONS_STATIC(timeBiasPitch)
-	PROPERTY_CONNECTIONS_STATIC(timeBiasRoll)
+    PROPERTY_CONNECTIONS_CHECKBOX(transformWhenAnalyzing)
+    PROPERTY_CONNECTIONS_STATIC(sampleRadius)
+    PROPERTY_CONNECTIONS_STATIC(searchRadius)
+    PROPERTY_CONNECTIONS_STATIC(offset)
+    PROPERTY_CONNECTIONS_TEXTFIELD(analysisFile)
+    PROPERTY_CONNECTIONS_TEXTFIELD_NUM(clipOffset)
+    PROPERTY_CONNECTIONS_CHECKBOX(useBackTrackpoints)
+    PROPERTY_CONNECTIONS_STATIC(stabilizeYaw)
+    PROPERTY_CONNECTIONS_STATIC(stabilizePitch)
+    PROPERTY_CONNECTIONS_STATIC(stabilizeRoll)
+    PROPERTY_CONNECTIONS_STATIC(smoothYaw)
+    PROPERTY_CONNECTIONS_STATIC(smoothPitch)
+    PROPERTY_CONNECTIONS_STATIC(smoothRoll)
+    PROPERTY_CONNECTIONS_STATIC(timeBiasYaw)
+    PROPERTY_CONNECTIONS_STATIC(timeBiasPitch)
+    PROPERTY_CONNECTIONS_STATIC(timeBiasRoll)
     
     Component.onCompleted: {
         ON_COMPLETED_CHECKBOX(analyze, false)
+        ON_COMPLETED_CHECKBOX(transformWhenAnalyzing, true)
         ON_COMPLETED_COMBOBOX(interpolation, 1)
-		ON_COMPLETED_STATIC(sampleRadius, 16)
-		ON_COMPLETED_STATIC(searchRadius, 24)
-		ON_COMPLETED_STATIC(offset, 64)
-		ON_COMPLETED_TEXTFIELD(analysisFile, "")
-		ON_COMPLETED_TEXTFIELD_NUM(clipOffset, 0)
-		ON_COMPLETED_CHECKBOX(useBackTrackpoints, false)
+        ON_COMPLETED_STATIC(sampleRadius, 16)
+        ON_COMPLETED_STATIC(searchRadius, 24)
+        ON_COMPLETED_STATIC(offset, 64)
+        ON_COMPLETED_TEXTFIELD(analysisFile, "")
+        ON_COMPLETED_TEXTFIELD_NUM(clipOffset, 0)
+        ON_COMPLETED_CHECKBOX(useBackTrackpoints, false)
 
-		ON_COMPLETED_STATIC(stabilizeYaw, 100)
-		ON_COMPLETED_STATIC(stabilizePitch, 100)
-		ON_COMPLETED_STATIC(stabilizeRoll, 100)
-		ON_COMPLETED_STATIC(smoothYaw, 120)
-		ON_COMPLETED_STATIC(smoothPitch, 120)
-		ON_COMPLETED_STATIC(smoothRoll, 120)
-		ON_COMPLETED_STATIC(timeBiasYaw, 0)
-		ON_COMPLETED_STATIC(timeBiasPitch, 0)
-		ON_COMPLETED_STATIC(timeBiasRoll, 0)
+        ON_COMPLETED_STATIC(stabilizeYaw, 100)
+        ON_COMPLETED_STATIC(stabilizePitch, 100)
+        ON_COMPLETED_STATIC(stabilizeRoll, 100)
+        ON_COMPLETED_STATIC(smoothYaw, 120)
+        ON_COMPLETED_STATIC(smoothPitch, 120)
+        ON_COMPLETED_STATIC(smoothRoll, 120)
+        ON_COMPLETED_STATIC(timeBiasYaw, 0)
+        ON_COMPLETED_STATIC(timeBiasPitch, 0)
+        ON_COMPLETED_STATIC(timeBiasRoll, 0)
             
         if (filter.isNew) {
             filter.savePreset(preset.parameters)
@@ -79,89 +82,91 @@ Item {
         var position = getPosition()
         blockUpdate = true
         SET_CONTROLS_CHECKBOX(analyze)
+        SET_CONTROLS_CHECKBOX(transformWhenAnalyzing)
         SET_CONTROLS_COMBOBOX(interpolation)
-		SET_CONTROLS_STATIC(sampleRadius)
-		SET_CONTROLS_STATIC(searchRadius)
-		SET_CONTROLS_STATIC(offset)
-		SET_CONTROLS_TEXTFIELD(analysisFile)
-		SET_CONTROLS_TEXTFIELD_NUM(clipOffset)
-		SET_CONTROLS_CHECKBOX(useBackTrackpoints)
-		SET_CONTROLS_STATIC(stabilizeYaw)
-		SET_CONTROLS_STATIC(stabilizePitch)
-		SET_CONTROLS_STATIC(stabilizeRoll)
-		SET_CONTROLS_STATIC(smoothYaw)
-		SET_CONTROLS_STATIC(smoothPitch)
-		SET_CONTROLS_STATIC(smoothRoll)
-		SET_CONTROLS_STATIC(timeBiasYaw)
-		SET_CONTROLS_STATIC(timeBiasPitch)
-		SET_CONTROLS_STATIC(timeBiasRoll)
+        SET_CONTROLS_STATIC(sampleRadius)
+        SET_CONTROLS_STATIC(searchRadius)
+        SET_CONTROLS_STATIC(offset)
+        SET_CONTROLS_TEXTFIELD(analysisFile)
+        SET_CONTROLS_TEXTFIELD_NUM(clipOffset)
+        SET_CONTROLS_CHECKBOX(useBackTrackpoints)
+        SET_CONTROLS_STATIC(stabilizeYaw)
+        SET_CONTROLS_STATIC(stabilizePitch)
+        SET_CONTROLS_STATIC(stabilizeRoll)
+        SET_CONTROLS_STATIC(smoothYaw)
+        SET_CONTROLS_STATIC(smoothPitch)
+        SET_CONTROLS_STATIC(smoothRoll)
+        SET_CONTROLS_STATIC(timeBiasYaw)
+        SET_CONTROLS_STATIC(timeBiasPitch)
+        SET_CONTROLS_STATIC(timeBiasRoll)
 
         blockUpdate = false
     }
     
     UPDATE_PROPERTY_CHECKBOX(analyze)
+    UPDATE_PROPERTY_CHECKBOX(transformWhenAnalyzing)
     UPDATE_PROPERTY_COMBOBOX(interpolation)
-	UPDATE_PROPERTY_STATIC(sampleRadius)
-	UPDATE_PROPERTY_STATIC(searchRadius)
-	UPDATE_PROPERTY_STATIC(offset)
-	UPDATE_PROPERTY_TEXTFIELD(analysisFile)
-	UPDATE_PROPERTY_TEXTFIELD_NUM(clipOffset)
-	UPDATE_PROPERTY_CHECKBOX(useBackTrackpoints)
-	UPDATE_PROPERTY_STATIC(stabilizeYaw)
-	UPDATE_PROPERTY_STATIC(stabilizePitch)
-	UPDATE_PROPERTY_STATIC(stabilizeRoll)
-	UPDATE_PROPERTY_STATIC(smoothYaw)
-	UPDATE_PROPERTY_STATIC(smoothPitch)
-	UPDATE_PROPERTY_STATIC(smoothRoll)
-	UPDATE_PROPERTY_STATIC(timeBiasYaw)
-	UPDATE_PROPERTY_STATIC(timeBiasPitch)
-	UPDATE_PROPERTY_STATIC(timeBiasRoll)
+    UPDATE_PROPERTY_STATIC(sampleRadius)
+    UPDATE_PROPERTY_STATIC(searchRadius)
+    UPDATE_PROPERTY_STATIC(offset)
+    UPDATE_PROPERTY_TEXTFIELD(analysisFile)
+    UPDATE_PROPERTY_TEXTFIELD_NUM(clipOffset)
+    UPDATE_PROPERTY_CHECKBOX(useBackTrackpoints)
+    UPDATE_PROPERTY_STATIC(stabilizeYaw)
+    UPDATE_PROPERTY_STATIC(stabilizePitch)
+    UPDATE_PROPERTY_STATIC(stabilizeRoll)
+    UPDATE_PROPERTY_STATIC(smoothYaw)
+    UPDATE_PROPERTY_STATIC(smoothPitch)
+    UPDATE_PROPERTY_STATIC(smoothRoll)
+    UPDATE_PROPERTY_STATIC(timeBiasYaw)
+    UPDATE_PROPERTY_STATIC(timeBiasPitch)
+    UPDATE_PROPERTY_STATIC(timeBiasRoll)
 
     
     function getPosition() {
         return Math.max(producer.position - (filter.in - producer.in), 0)
     }
 
-	function getFrameRate() {
-		return producer.getDouble("meta.media.frame_rate_num", getPosition()) / producer.getDouble("meta.media.frame_rate_den", getPosition())
-	}
+    function getFrameRate() {
+        return producer.getDouble("meta.media.frame_rate_num", getPosition()) / producer.getDouble("meta.media.frame_rate_den", getPosition())
+    }
 
-	function getClipOffset() {
+    function getClipOffset() {
         return filter.in
     }
 
-	FileDialog {
-	    id: selectAnalysisFile
-	    title: "File for motion analysis"
-	    folder: shortcuts.home
+    FileDialog {
+        id: selectAnalysisFile
+        title: "File for motion analysis"
+        folder: shortcuts.home
         modality: Qt.WindowModal
         selectMultiple: false
-		selectExisting: false
+        selectExisting: false
         selectFolder: false
         nameFilters: ['Motion Analysis Files (*.bigsh0t360motion)', 'All Files (*)']
 
-	    onAccepted: {
+        onAccepted: {
             var urlString = selectAnalysisFile.fileUrl.toString()
-			analysisFileTextField.text = urlString
-			
-			updateProperty_analysisFile()
-	    }
-	    onRejected: {
-	    }
-	}
+            analysisFileTextField.text = urlString
+            
+            updateProperty_analysisFile()
+        }
+        onRejected: {
+        }
+    }
 
-	function toggleMode() {
-		if (blockUpdate) return;
-		if (analyzeCheckBox.checked && analysisFileTextField.text == "") {
-			selectAnalysisFile.open()
-		}
-		updateProperty_analyze()
-	}
+    function toggleMode() {
+        if (blockUpdate) return;
+        if (analyzeCheckBox.checked && analysisFileTextField.text == "") {
+            selectAnalysisFile.open()
+        }
+        updateProperty_analyze()
+    }
 
-	function onClipOffsetUndo() {
-		clipOffsetTextField.text = (getClipOffset() / getFrameRate()).toFixed(4)
-		updateProperty_clipOffset()
-	}
+    function onClipOffsetUndo() {
+        clipOffsetTextField.text = (getClipOffset() / getFrameRate()).toFixed(4)
+        updateProperty_clipOffset()
+    }
     
     GridLayout {
         columns: 4
@@ -179,84 +184,84 @@ Item {
             onBeforePresetLoaded: {
                 filter.resetProperty("sampleRadius")
                 filter.resetProperty("searchRadius")
-				filter.resetProperty("offset")
+                filter.resetProperty("offset")
                 filter.resetProperty("interpolation")
-				filter.resetProperty("stabilizeYaw")
-				filter.resetProperty("stabilizePitch")
-				filter.resetProperty("stabilizeRoll")
-				filter.resetProperty("smoothYaw")
-				filter.resetProperty("smoothPitch")
-				filter.resetProperty("smoothRoll")
-				filter.resetProperty("timeBiasYaw")
-				filter.resetProperty("timeBiasPitch")
-				filter.resetProperty("timeBiasRoll")
+                filter.resetProperty("stabilizeYaw")
+                filter.resetProperty("stabilizePitch")
+                filter.resetProperty("stabilizeRoll")
+                filter.resetProperty("smoothYaw")
+                filter.resetProperty("smoothPitch")
+                filter.resetProperty("smoothRoll")
+                filter.resetProperty("timeBiasYaw")
+                filter.resetProperty("timeBiasPitch")
+                filter.resetProperty("timeBiasRoll")
             }
             onPresetSelected: {
                 LOAD_PRESET_STATIC(sampleRadius)
                 LOAD_PRESET_STATIC(searchRadius)
-				LOAD_PRESET_STATIC(offset)
+                LOAD_PRESET_STATIC(offset)
                 LOAD_PRESET_COMBOBOX(interpolation)
-				LOAD_PRESET_STATIC(stabilizeYaw)
-				LOAD_PRESET_STATIC(stabilizePitch)
-				LOAD_PRESET_STATIC(stabilizeRoll)
-				LOAD_PRESET_STATIC(smoothYaw)
-				LOAD_PRESET_STATIC(smoothPitch)
-				LOAD_PRESET_STATIC(smoothRoll)
-				LOAD_PRESET_STATIC(timeBiasYaw)
-				LOAD_PRESET_STATIC(timeBiasPitch)
-				LOAD_PRESET_STATIC(timeBiasRoll)
+                LOAD_PRESET_STATIC(stabilizeYaw)
+                LOAD_PRESET_STATIC(stabilizePitch)
+                LOAD_PRESET_STATIC(stabilizeRoll)
+                LOAD_PRESET_STATIC(smoothYaw)
+                LOAD_PRESET_STATIC(smoothPitch)
+                LOAD_PRESET_STATIC(smoothRoll)
+                LOAD_PRESET_STATIC(timeBiasYaw)
+                LOAD_PRESET_STATIC(timeBiasPitch)
+                LOAD_PRESET_STATIC(timeBiasRoll)
 
                 setControls(null);
             }
         }
 
-		Label {
+        Label {
             text: qsTr('Mode')
             Layout.alignment: Qt.AlignRight
         }
         CheckBox {
-			text: qsTr('Analyze')
+            text: qsTr('Analyze')
             checked: false
-			partiallyCheckedEnabled: false
+            partiallyCheckedEnabled: false
             id: analyzeCheckBox
             Layout.columnSpan: 3
             onCheckedChanged: toggleMode()
         }
 
-		Label {
+        Label {
             text: qsTr('File')
             Layout.alignment: Qt.AlignRight
         }
         TextField {
-			text: qsTr("")
+            text: qsTr("")
             id: analysisFileTextField
             Layout.columnSpan: 2
-			Layout.fillWidth: true
+            Layout.fillWidth: true
             Layout.alignment: Qt.AlignLeft
-			onEditingFinished: updateProperty_analysisFile()
+            onEditingFinished: updateProperty_analysisFile()
         }
-		Button {
-			iconName: 'document-open'
-		    iconSource: 'qrc:///icons/oxygen/32x32/actions/document-open.png'
-		    tooltip: qsTr('Browse...')
-		    implicitWidth: 20
-		    implicitHeight: 20
+        Button {
+            iconName: 'document-open'
+            iconSource: 'qrc:///icons/oxygen/32x32/actions/document-open.png'
+            tooltip: qsTr('Browse...')
+            implicitWidth: 20
+            implicitHeight: 20
             onClicked: selectAnalysisFile.open()
-		}
+        }
 
-		Label {
+        Label {
             text: qsTr('Start Offset')
             Layout.alignment: Qt.AlignRight
         }
         TextField {
-			text: qsTr("0")
+            text: qsTr("0")
             id: clipOffsetTextField
             Layout.columnSpan: 2
-			Layout.fillWidth: true
+            Layout.fillWidth: true
             Layout.alignment: Qt.AlignLeft
-			onEditingFinished: updateProperty_clipOffset()
+            onEditingFinished: updateProperty_clipOffset()
         }
-		UndoButton {
+        UndoButton {
             id: clipOffsetUndo
             onClicked: onClipOffsetUndo()
         }
@@ -277,11 +282,24 @@ Item {
             onClicked: interpolationComboBox.currentIndex = 0
         }
         
-		/* -------------------------------------------- */
-		Label {
+        /* -------------------------------------------- */
+        Label {
             text: qsTr('Analysis')
             Layout.alignment: Qt.AlignLeft
-			Layout.columnSpan: 4
+            Layout.columnSpan: 4
+        }
+
+        Label {
+            text: qsTr('')
+            Layout.alignment: Qt.AlignRight
+        }
+        CheckBox {
+            text: qsTr('Apply Transform')
+            checked: true
+            partiallyCheckedEnabled: false
+            id: transformWhenAnalyzingCheckBox
+            Layout.columnSpan: 3
+            onCheckedChanged: updateProperty_transformWhenAnalyzing()
         }
 
         Label {
@@ -295,7 +313,7 @@ Item {
             suffix: ' px'
             decimals: 0
             stepSize: 1
-			Layout.columnSpan: 2
+            Layout.columnSpan: 2
             onValueChanged: updateProperty_sampleRadius(getPosition())
         }
         UndoButton {
@@ -314,7 +332,7 @@ Item {
             suffix: ' px'
             decimals: 0
             stepSize: 1
-			Layout.columnSpan: 2
+            Layout.columnSpan: 2
             onValueChanged: updateProperty_searchRadius(getPosition())
         }
         UndoButton {
@@ -322,7 +340,7 @@ Item {
             onClicked: searchRadiusSlider.value = 24
         }
 
-		Label {
+        Label {
             text: qsTr('Offset')
             Layout.alignment: Qt.AlignRight
         }
@@ -333,7 +351,7 @@ Item {
             suffix: ' px'
             decimals: 0
             stepSize: 1
-			Layout.columnSpan: 2
+            Layout.columnSpan: 2
             onValueChanged: updateProperty_offset(getPosition())
         }
         UndoButton {
@@ -341,27 +359,27 @@ Item {
             onClicked: offsetSlider.value = 64
         }
 
-		Label {
+        Label {
             text: qsTr('Track Points')
             Layout.alignment: Qt.AlignRight
         }
         CheckBox {
-			text: qsTr('Use backwards-facing track points')
+            text: qsTr('Use backwards-facing track points')
             checked: false
-			partiallyCheckedEnabled: false
+            partiallyCheckedEnabled: false
             id: useBackTrackpointsCheckBox
             Layout.columnSpan: 3
             onCheckedChanged: updateProperty_useBackTrackpoints()
         }
 
-		/* -------------------------------------------- */
-		Label {
+        /* -------------------------------------------- */
+        Label {
             text: qsTr('Yaw')
             Layout.alignment: Qt.AlignLeft
-			Layout.columnSpan: 4
+            Layout.columnSpan: 4
         }
 
-		Label {
+        Label {
             text: qsTr('Amount')
             Layout.alignment: Qt.AlignRight
         }
@@ -372,14 +390,14 @@ Item {
             suffix: ' %'
             decimals: 0
             stepSize: 1
-			Layout.columnSpan: 2
+            Layout.columnSpan: 2
             onValueChanged: updateProperty_stabilizeYaw(getPosition())
         }
         UndoButton {
             id: stabilizeYawUndo
             onClicked: stabilizeYawSlider.value = 100
         }
-		Label {
+        Label {
             text: qsTr('Smoothing')
             Layout.alignment: Qt.AlignRight
         }
@@ -390,14 +408,14 @@ Item {
             suffix: ' frames'
             decimals: 0
             stepSize: 1
-			Layout.columnSpan: 2
+            Layout.columnSpan: 2
             onValueChanged: updateProperty_smoothYaw(getPosition())
         }
         UndoButton {
             id: smoothYawUndo
             onClicked: smoothYawSlider.value = 120
         }
-		Label {
+        Label {
             text: qsTr('Time Bias')
             Layout.alignment: Qt.AlignRight
         }
@@ -408,7 +426,7 @@ Item {
             suffix: ' %'
             decimals: 0
             stepSize: 1
-			Layout.columnSpan: 2
+            Layout.columnSpan: 2
             onValueChanged: updateProperty_timeBiasYaw(getPosition())
         }
         UndoButton {
@@ -416,10 +434,10 @@ Item {
             onClicked: timeBiasYawSlider.value = 0
         }
 
-		Label {
+        Label {
             text: qsTr('Pitch')
             Layout.alignment: Qt.AlignLeft
-			Layout.columnSpan: 4
+            Layout.columnSpan: 4
         }
         Label {
             text: qsTr('Amount')
@@ -432,14 +450,14 @@ Item {
             suffix: ' %'
             decimals: 0
             stepSize: 1
-			Layout.columnSpan: 2
+            Layout.columnSpan: 2
             onValueChanged: updateProperty_stabilizePitch(getPosition())
         }
         UndoButton {
             id: stabilizePitchUndo
             onClicked: stabilizePitchSlider.value = 100
         }
-		Label {
+        Label {
             text: qsTr('Smoothing')
             Layout.alignment: Qt.AlignRight
         }
@@ -450,14 +468,14 @@ Item {
             suffix: ' frames'
             decimals: 0
             stepSize: 1
-			Layout.columnSpan: 2
+            Layout.columnSpan: 2
             onValueChanged: updateProperty_smoothPitch(getPosition())
         }
         UndoButton {
             id: smoothPitchUndo
             onClicked: smoothPitchSlider.value = 120
         }
-		Label {
+        Label {
             text: qsTr('Time Bias')
             Layout.alignment: Qt.AlignRight
         }
@@ -468,7 +486,7 @@ Item {
             suffix: ' %'
             decimals: 0
             stepSize: 1
-			Layout.columnSpan: 2
+            Layout.columnSpan: 2
             onValueChanged: updateProperty_timeBiasPitch(getPosition())
         }
         UndoButton {
@@ -476,10 +494,10 @@ Item {
             onClicked: timeBiasPitchSlider.value = 0
         }
 
-		Label {
+        Label {
             text: qsTr('Roll')
             Layout.alignment: Qt.AlignLeft
-			Layout.columnSpan: 4
+            Layout.columnSpan: 4
         }
         Label {
             text: qsTr('Amount')
@@ -492,14 +510,14 @@ Item {
             suffix: ' %'
             decimals: 0
             stepSize: 1
-			Layout.columnSpan: 2
+            Layout.columnSpan: 2
             onValueChanged: updateProperty_stabilizeRoll(getPosition())
         }
         UndoButton {
             id: stabilizeRollUndo
             onClicked: stabilizeRollSlider.value = 100
         }
-		Label {
+        Label {
             text: qsTr('Smoothing')
             Layout.alignment: Qt.AlignRight
         }
@@ -510,14 +528,14 @@ Item {
             suffix: ' frames'
             decimals: 0
             stepSize: 1
-			Layout.columnSpan: 2
+            Layout.columnSpan: 2
             onValueChanged: updateProperty_smoothRoll(getPosition())
         }
         UndoButton {
             id: smoothRollUndo
             onClicked: smoothRollSlider.value = 120
         }
-		Label {
+        Label {
             text: qsTr('Time Bias')
             Layout.alignment: Qt.AlignRight
         }
@@ -528,7 +546,7 @@ Item {
             suffix: ' %'
             decimals: 0
             stepSize: 1
-			Layout.columnSpan: 2
+            Layout.columnSpan: 2
             onValueChanged: updateProperty_timeBiasRoll(getPosition())
         }
         UndoButton {

@@ -147,7 +147,7 @@ When you switch to analysis mode, the filter will overlay information on the vid
      * Blue squares are fixed.
      * Green squares are where the sampled areas were found.
 
- * When analyzing, the red, yellow and green squares are drawn first. Then the frame is transformed in such a way as to cancel the rotation from the previous frame, and the blue squares are drawn. If the detection and detected rotation are flawless, the blue and green squares should overlap completely and form cyan squares.
+ * When analyzing, the red, yellow and green squares are drawn first. Then the frame is transformed in such a way as to cancel the rotation from the previous frame, and the blue squares are drawn. If the detection and detected rotation are flawless, the blue and green squares should overlap completely and form cyan squares. Note: "Analysis: Apply Transform" must be enabled.
 
  * The waveform drawn in the lower middle shows the detected motion. Red is yaw, green is pitch and blue is roll.
 
@@ -161,6 +161,8 @@ When you switch to analysis mode, the filter will overlay information on the vid
  * **Start Offset**: The offset into the stabilization file that corresponds to the start of this clip. Press the **Undo** button to set it from Shotcut timeline. For example, if you have a 30 second clip, analyze it all, and then split it into three clips of 10 seconds each, then the start offsets should be 0s, 10s, and 20s.
 
  * **Interpolation**: Output quality.
+
+ * **Analysis: Apply Transform**: When checked, the filter will apply the frame-to-frame transform in order to show the quality of the analysis (see the above section about the FUD). When you are satisfied with the analysis quality you can turn this off, as it adds approximately 50% to the analysis time.
 
  * **Analysis: Sample Radius**: The radius of the square that the stabilizer will sample.
 
