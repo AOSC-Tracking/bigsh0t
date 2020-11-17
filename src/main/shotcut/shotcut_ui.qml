@@ -98,7 +98,7 @@
 #define UPDATE_PROPERTY_STATIC(PROPERTY) function updateProperty_ ## PROPERTY (position) {\
         if (blockUpdate) return;\
         var value = PROPERTY ## Slider.value;\
-		filter.set(#PROPERTY, value);\
+        filter.set(#PROPERTY, value);\
     }
 
 #define UPDATE_PROPERTY_COMBOBOX(PROPERTY) function updateProperty_ ## PROPERTY () {\
@@ -122,7 +122,6 @@
 #define UPDATE_PROPERTY_TEXTFIELD_NUM(PROPERTY) function updateProperty_ ## PROPERTY () {\
         if (blockUpdate) return;\
         var value = parseFloat(PROPERTY ## TextField.text);\
-		console.log(value); \
         filter.set(#PROPERTY, value);\
     }
 

@@ -120,6 +120,8 @@ Converts a rectilinear (a normal-looking) image to an equirectangular image. Use
 
 Stabilizes 360 footage. The plugin works in two phases - analysis and stabilization. When analyzing footage, it detects frame-to-frame rotation, and when stabilizing it tries to correct high-frequency motion (shake).
 
+Protip: Use **Settings** > **Preview Scaling** and **Subpixels**. It's much faster than running in higher resolution without subpixels.
+
 #### How to Stabilize Video
 
  1. Disable **Realtime (frame dropping)** in the **Settings** menu. It is important that the filter sees all frames.
@@ -169,6 +171,8 @@ When you switch to analysis mode, the filter will overlay information on the vid
  * **Analysis: Search Radius**: The maximum amount of motion the stabilizer will detect.
 
  * **Analysis: Offset**: The distance between the track points.
+
+ * **Analysis: Subpixels**: Use subpixel matching with this many subpixels. Use when applying the filter on a lower-resolution preview.
 
  * **Analysis: Use backwards-facing track points**: If set, six backwards-facing track points will also be used to detect pitch and yaw motion. Disable if, for example, you show up holding the camera there.
 

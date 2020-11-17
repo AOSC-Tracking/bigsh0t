@@ -81,6 +81,7 @@ class Rotation {
 class RotationSamples {
     public:
     std::vector<Rotation> rotations;
+    double minSpan;
 
     void add (Rotation rot) {
         removeOverlapping (rot);
@@ -100,6 +101,8 @@ class RotationSamples {
         } else {
             rotations.insert (rotations.begin() + pos, rot);
         }
+        
+        updateMinSpan();
     }
 
     Rotation getMax () {
@@ -164,6 +167,7 @@ class RotationSamples {
 
     void clear () {
         rotations.clear();
+        updateMinSpan();
     }
 
     Rotation& operator[](int index) {
@@ -182,6 +186,10 @@ class RotationSamples {
             }
         }
         return -1;
+    }
+    
+    int lookup(const double time) {
+        return indexOf(time - getMinSpan() / 2);
     }
 
     size_t size () {
@@ -205,6 +213,19 @@ class RotationSamples {
             }
         }
         return false;
+    }
+    
+    void updateMinSpan() {
+        for (Rotation& r : rotations) {
+            double s = r.span();
+            if (minSpan < 0.0 || s < minSpan) {
+                minSpan = s;
+            }
+        }
+    }
+    
+    double getMinSpan() {
+        return minSpan;
     }
     
     int findFirstSkip () {
@@ -276,6 +297,7 @@ class RotationSamples {
             }
             file.close();
         }
+        updateMinSpan();
     }
 
     void smoothComponent (std::vector<double>& samples, int window, double windowBias) {
@@ -308,6 +330,7 @@ class RotationSamples {
             double v = (v1 - v0) / num;
             samples[i] = v;
         }
+        updateMinSpan();
     }
     
     void correct (int wYaw, int wPitch, int wRoll, double bYaw, double bPitch, double bRoll, RotationSamples& dest) {
@@ -382,13 +405,18 @@ inline short toGray(uint32_t color) {
 class TrackPoint {
     public:
 
-    TrackPoint (int x, int y, int sampleRadius, int searchRadius) {
+    TrackPoint (int x, int y, int sampleRadius, int searchRadius, int subpixels) {
         this->x = x;
         this->y = y;
         this->cx = x;
         this->cy = y;
         this->sampleRadius = sampleRadius;
         this->searchRadius = searchRadius;
+        this->subpixels = subpixels;
+        this->subpixelFactor = 1.0 / (subpixels > 1 ? subpixels : 1);
+        
+        this->subcx = 0;
+        this->subcy = 0;
 
         sampleBuffer = NULL;
         active = true;
@@ -407,6 +435,24 @@ class TrackPoint {
             for (int sx = atx; sx < atx + sampleRadius * 2; ++sx) {
                 int sample = sampleBuffer[sbp];
                 int actual = toGray(buffer[sy * g.width + sx]);
+                int err = abs(sample - actual);
+                error += err;
+                ++sbp;
+                if (error > abortAtError) {
+                    return error;
+                }
+            }
+        }
+        return error;
+    }
+    
+    int matchSubpixel (Graphics& g, const uint32_t* buffer, int atx, int aty, double spx, double spy, int abortAtError) {
+        int error = 0;
+        int sbp = 0;
+        for (int sy = aty; sy < aty + sampleRadius * 2; ++sy) {
+            for (int sx = atx; sx < atx + sampleRadius * 2; ++sx) {
+                int sample = sampleBuffer[sbp];
+                int actual = toGray(sampleBilinear(buffer, sx + spx, sy + spy, g.width, g.height));
                 int err = abs(sample - actual);
                 error += err;
                 ++sbp;
@@ -437,14 +483,37 @@ class TrackPoint {
         cy = y;
 
         int bestError = sampleRadius * sampleRadius * 4 * 256 * 3;
-        for (int my = y - searchRadius; my < y + searchRadius; ++my) {
-            for (int mx = x - searchRadius; mx < x + searchRadius; ++mx) {
-                int error = match (g, current, mx - sampleRadius, my - sampleRadius, bestError);
-                if (bestError < 0 || error < bestError) {
-                    bestError = error;
-                    cx = mx;
-                    cy = my;
-                    cerr = bestError;
+        bestError = match (g, current, x - sampleRadius, y - sampleRadius, bestError);
+        for (int radius = 1; radius < searchRadius; ++radius) {
+            for (int my = y - radius; my < y + radius; ++my) {
+                for (int mx = x - radius; mx < x + radius; ++mx) {
+                    if (my == (y - radius) || my == (y + radius - 1) || mx == (x - radius) || mx == (x + radius - 1)) {
+                        int error = match (g, current, mx - sampleRadius, my - sampleRadius, bestError);
+                        if (bestError < 0 || error < bestError) {
+                            bestError = error;
+                            cx = mx;
+                            cy = my;
+                            cerr = bestError;
+                        }
+                    }
+                }
+            }
+        }
+        
+        subcx = 0;
+        subcy = 0;
+        for (int radius = 1; radius <= subpixels / 2; ++radius) {
+            for (int my = -radius; my < radius; ++my) {
+                for (int mx = -radius; mx < radius; ++mx) {
+                    if (my == (- radius) || my == (radius - 1) || mx == (- radius) || mx == (radius - 1)) {
+                        int error = matchSubpixel (g, current, cx - sampleRadius, cy - sampleRadius, mx * subpixelFactor, my * subpixelFactor, bestError);
+                        if (bestError < 0 || error < bestError) {
+                            bestError = error;
+                            subcx = mx;
+                            subcy = my;
+                            cerr = bestError;
+                        }
+                    }
                 }
             }
         }
@@ -463,13 +532,16 @@ class TrackPoint {
 
     void markCurrent (Graphics& g) {
         if (active) {
-            g.fillRect(cx - sampleRadius, cy - sampleRadius, 2 * sampleRadius, 2 * sampleRadius, 0xffff00ff, 0xff00ff00);
+            g.fillRect(cx - sampleRadius, cy - sampleRadius, 2 * sampleRadius, 2 * sampleRadius, 0xffff00ff, 0xff00aa00);
+            if (subpixels > 1) {
+                g.fillRect(cx + subcx * subpixelFactor * sampleRadius - 2, cy + subcy * subpixelFactor * sampleRadius - 2, 4, 4, 0xffffff00, 0xff0000ff);
+            }
         }
     }
 
     void getMotion (Vector2& motion) {
-        motion[0] = cx - x;
-        motion[1] = cy - y;
+        motion[0] = cx - x + subcx * subpixelFactor;
+        motion[1] = cy - y + subcy * subpixelFactor;
     }
 
     int getError () {
@@ -485,6 +557,10 @@ class TrackPoint {
     int y;
     int cx;
     int cy;
+    int subcx;
+    int subcy;
+    int subpixels;
+    double subpixelFactor;
     int cerr;
     int sampleRadius;
     int searchRadius;
@@ -494,17 +570,18 @@ class TrackPoint {
 
 class TrackPointMatrix {
     public:
-    TrackPointMatrix (int x, int y, int numh, int numv, int offset, int sampleRadius, int searchRadius) {
+    TrackPointMatrix (int x, int y, int numh, int numv, int offset, int sampleRadius, int searchRadius, int subpixels) {
         this->x = x;
         this->y = y;
         this->sampleRadius = sampleRadius;
         this->searchRadius = searchRadius;
+        this->subpixels = subpixels;
 
         int x0 = x - (offset * numh / 2) + offset / 2;
         int y0 = y - (offset * numv / 2) + offset / 2;
         for (int tpy = 0; tpy < numv; ++tpy) {
             for (int tpx = 0; tpx < numh; ++tpx) {
-                trackPoints.push_back (TrackPoint (x0 + tpx * offset, y0 + tpy * offset, sampleRadius, searchRadius));
+                trackPoints.push_back (TrackPoint (x0 + tpx * offset, y0 + tpy * offset, sampleRadius, searchRadius, subpixels));
                 errors.push_back (0);
             }
         }
@@ -577,6 +654,7 @@ class TrackPointMatrix {
     int y;
     int sampleRadius;
     int searchRadius;
+    int subpixels;
     std::vector<TrackPoint> trackPoints;
     std::vector<int> errors;
 };
@@ -605,6 +683,7 @@ class Stabilize360 : public Frei0rFilter, MPFilter {
     Frei0rParameter<int,double> sampleRadius;
     Frei0rParameter<int,double> searchRadius;
     Frei0rParameter<int,double> offset;
+    Frei0rParameter<int,double> subpixels;
 
     double stabilizeYaw;
     double stabilizePitch;
@@ -634,6 +713,7 @@ class Stabilize360 : public Frei0rFilter, MPFilter {
         sampleRadius = 16;
         searchRadius = 24;
         offset = 64;
+        subpixels = 0;
 
         previousFrame = NULL;
         previousFrameTime = -1;
@@ -663,6 +743,7 @@ class Stabilize360 : public Frei0rFilter, MPFilter {
         register_fparam(sampleRadius, "sampleRadius", "");
         register_fparam(searchRadius, "searchRadius", "");
         register_fparam(offset, "offset", "");
+        register_fparam(subpixels, "subpixels", "");
 
         register_param(stabilizeYaw, "stabilizeYaw", "");
         register_param(stabilizePitch, "stabilizePitch", "");
@@ -769,11 +850,16 @@ class Stabilize360 : public Frei0rFilter, MPFilter {
         updateAnalyzeState (clipTime, out, in);
 
         if (analyze) {
-            TrackPointMatrix trackAhead (        width / 2, height / 2, 3, 3, offset, sampleRadius, searchRadius);
-            TrackPointMatrix trackLeft  (        width / 4, height / 2, 3, 3, offset, sampleRadius, searchRadius);
-            TrackPointMatrix trackRight (width - width / 4, height / 2, 3, 3, offset, sampleRadius, searchRadius);
-            TrackPointMatrix trackBackL (               64, height / 2, 1, 3, offset, sampleRadius, searchRadius);
-            TrackPointMatrix trackBackR (       width - 64, height / 2, 1, 3, offset, sampleRadius, searchRadius);
+            int backPos = offset;
+            if (backPos < searchRadius + sampleRadius) {
+                backPos = searchRadius + sampleRadius;
+            }
+            int numSubpixels = 1 << subpixels;
+            TrackPointMatrix trackAhead (        width / 2, height / 2, 3, 3, offset, sampleRadius, searchRadius, numSubpixels);
+            TrackPointMatrix trackLeft  (        width / 4, height / 2, 3, 3, offset, sampleRadius, searchRadius, numSubpixels);
+            TrackPointMatrix trackRight (width - width / 4, height / 2, 3, 3, offset, sampleRadius, searchRadius, numSubpixels);
+            TrackPointMatrix trackBackL (          backPos, height / 2, 1, 3, offset, sampleRadius, searchRadius, numSubpixels);
+            TrackPointMatrix trackBackR (  width - backPos, height / 2, 1, 3, offset, sampleRadius, searchRadius, numSubpixels);
 
             uint32_t* intermediateFrame = (uint32_t*) malloc(width * height * sizeof(uint32_t));
             memcpy (intermediateFrame, in, width * height * sizeof(uint32_t));
@@ -898,7 +984,7 @@ class Stabilize360 : public Frei0rFilter, MPFilter {
                 updateCorrections();
             }
                 
-            int correctionIndex = corrections.indexOf (clipTime);
+            int correctionIndex = corrections.lookup (clipTime);
             if (correctionIndex >= 0) {
                 Rotation correction = corrections[correctionIndex];
                 view (
@@ -937,4 +1023,4 @@ class Stabilize360 : public Frei0rFilter, MPFilter {
 frei0r::construct<Stabilize360> plugin("stabilize_360",
 "Stabilizes 360 equirectangular footage.",
 "Leo Sutic <leo@sutic.nu>",
-2, 2, F0R_COLOR_MODEL_PACKED32);
+2, 4, F0R_COLOR_MODEL_PACKED32);

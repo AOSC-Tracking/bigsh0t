@@ -19,6 +19,7 @@ Item {
     PROPERTY_VARIABLES_STATIC(sampleRadius)
     PROPERTY_VARIABLES_STATIC(searchRadius)
     PROPERTY_VARIABLES_STATIC(offset)
+    PROPERTY_VARIABLES_COMBOBOX(subpixels)
     PROPERTY_VARIABLES_TEXTFIELD(analysisFile)
     PROPERTY_VARIABLES_TEXTFIELD_NUM(clipOffset)
     PROPERTY_VARIABLES_CHECKBOX(useBackTrackpoints)
@@ -38,6 +39,7 @@ Item {
     PROPERTY_CONNECTIONS_STATIC(sampleRadius)
     PROPERTY_CONNECTIONS_STATIC(searchRadius)
     PROPERTY_CONNECTIONS_STATIC(offset)
+    PROPERTY_CONNECTIONS_COMBOBOX(subpixels)
     PROPERTY_CONNECTIONS_TEXTFIELD(analysisFile)
     PROPERTY_CONNECTIONS_TEXTFIELD_NUM(clipOffset)
     PROPERTY_CONNECTIONS_CHECKBOX(useBackTrackpoints)
@@ -58,6 +60,7 @@ Item {
         ON_COMPLETED_STATIC(sampleRadius, 16)
         ON_COMPLETED_STATIC(searchRadius, 24)
         ON_COMPLETED_STATIC(offset, 64)
+        ON_COMPLETED_COMBOBOX(subpixels, 1)
         ON_COMPLETED_TEXTFIELD(analysisFile, "")
         ON_COMPLETED_TEXTFIELD_NUM(clipOffset, 0)
         ON_COMPLETED_CHECKBOX(useBackTrackpoints, false)
@@ -87,6 +90,7 @@ Item {
         SET_CONTROLS_STATIC(sampleRadius)
         SET_CONTROLS_STATIC(searchRadius)
         SET_CONTROLS_STATIC(offset)
+        SET_CONTROLS_COMBOBOX(subpixels)
         SET_CONTROLS_TEXTFIELD(analysisFile)
         SET_CONTROLS_TEXTFIELD_NUM(clipOffset)
         SET_CONTROLS_CHECKBOX(useBackTrackpoints)
@@ -109,6 +113,7 @@ Item {
     UPDATE_PROPERTY_STATIC(sampleRadius)
     UPDATE_PROPERTY_STATIC(searchRadius)
     UPDATE_PROPERTY_STATIC(offset)
+    UPDATE_PROPERTY_COMBOBOX(subpixels)
     UPDATE_PROPERTY_TEXTFIELD(analysisFile)
     UPDATE_PROPERTY_TEXTFIELD_NUM(clipOffset)
     UPDATE_PROPERTY_CHECKBOX(useBackTrackpoints)
@@ -128,6 +133,7 @@ Item {
     }
 
     function getFrameRate() {
+        /* console.log(producer.get("resource", "None")) */
         return producer.getDouble("meta.media.frame_rate_num", getPosition()) / producer.getDouble("meta.media.frame_rate_den", getPosition())
     }
 
@@ -164,7 +170,7 @@ Item {
     }
 
     function onClipOffsetUndo() {
-        clipOffsetTextField.text = (getClipOffset() / getFrameRate()).toFixed(4)
+        clipOffsetTextField.text = (getClipOffset() / getFrameRate()).toFixed(3)
         updateProperty_clipOffset()
     }
     
@@ -179,12 +185,13 @@ Item {
         }
         Preset {
             id: preset
-            parameters: ["sampleRadius", "searchRadius", "offset", "interpolation", "stabilizeYaw", "stabilizePitch", "stabilizeRoll", "smoothYaw", "smoothPitch", "smoothRoll", "timeBiasYaw", "timeBiasPitch", "timeBiasRoll"]
+            parameters: ["sampleRadius", "searchRadius", "offset", "subpixels", "interpolation", "stabilizeYaw", "stabilizePitch", "stabilizeRoll", "smoothYaw", "smoothPitch", "smoothRoll", "timeBiasYaw", "timeBiasPitch", "timeBiasRoll"]
             Layout.columnSpan: 3
             onBeforePresetLoaded: {
                 filter.resetProperty("sampleRadius")
                 filter.resetProperty("searchRadius")
                 filter.resetProperty("offset")
+                filter.resetProperty("subpixels")
                 filter.resetProperty("interpolation")
                 filter.resetProperty("stabilizeYaw")
                 filter.resetProperty("stabilizePitch")
@@ -200,6 +207,7 @@ Item {
                 LOAD_PRESET_STATIC(sampleRadius)
                 LOAD_PRESET_STATIC(searchRadius)
                 LOAD_PRESET_STATIC(offset)
+                LOAD_PRESET_COMBOBOX(subpixels)
                 LOAD_PRESET_COMBOBOX(interpolation)
                 LOAD_PRESET_STATIC(stabilizeYaw)
                 LOAD_PRESET_STATIC(stabilizePitch)
@@ -370,6 +378,22 @@ Item {
             id: useBackTrackpointsCheckBox
             Layout.columnSpan: 3
             onCheckedChanged: updateProperty_useBackTrackpoints()
+        }
+
+        Label {
+            text: qsTr('Subpixels')
+            Layout.alignment: Qt.AlignRight
+        }
+        ComboBox {
+            currentIndex: 0
+            model: ["1x1 (disabled)", "2x2", "4x4", "8x8"]
+            id: subpixelsComboBox
+            Layout.columnSpan: 2
+            onCurrentIndexChanged: updateProperty_subpixels()
+        }
+        UndoButton {
+            id: subpixelsUndo
+            onClicked: subpixelsComboBox.currentIndex = 0
         }
 
         /* -------------------------------------------- */
