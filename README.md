@@ -181,3 +181,22 @@ When you switch to analysis mode, the filter will overlay information on the vid
  * **Yaw / Pitch / Roll: Smoothing**: The number of frames to use to smooth out the shakes. The higher the value, the slower the camera will follow any intended motion.
 
  * **Yaw / Pitch / Roll: Time Bias**: Shift the frames used to smooth out the shakes relative to the stabilized frame. A value less than zero will give more weight to past frames, and the camera will seem to lag behind intended movement. A value greater than zero will give more weight to future frames, and the camera will appear to move ahead of the intended camera movement. A value of zero should make the camera follow the intended path.
+
+
+### Zenith Correction
+
+Stabilizes 360 footage using the orientation sensor data in the video file. Currently it can 
+
+#### Parameters
+
+ * **File**: Path to file that will be used to store the analysis data.
+
+ * **Start Offset**: The offset into the stabilization file that corresponds to the start of this clip. Press the **Undo** button to set it from Shotcut timeline. For example, if you have a 30 second clip, analyze it all, and then split it into three clips of 10 seconds each, then the start offsets should be 0s, 10s, and 20s.
+
+ * **Interpolation**: Output quality.
+
+ * **Yaw: Smooth yaw**: If checked, the yaw orientation data will not be applied as-is. Instead the footage will follow the yaw movement of the camera so that the view will be "ahead" of the camera. Check this if you just want the footage to be zenith corrected in the pitch and roll axis.
+
+ * **Yaw: Smoothing**: The number of frames to use to smooth the yaw movement. The higher the value, the slower the camera will follow any intended motion.
+
+ * **Yaw: Time Bias**: Shift the frames used to smooth out the shakes relative to the stabilized frame. A value less than zero will give more weight to past frames, and the camera will seem to lag behind intended movement. A value greater than zero will give more weight to future frames, and the camera will appear to move ahead of the intended camera movement. A value of zero should make the camera follow the intended path.
