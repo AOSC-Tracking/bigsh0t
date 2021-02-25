@@ -2,7 +2,8 @@ cmake_minimum_required (VERSION 3.13)
 project (bigsh0t)
 
 set (CPP_SOURCE src/main/cpp)
-set (COMMON_FILES ${CPP_SOURCE}/Matrix.cpp ${CPP_SOURCE}/MPFilter.cpp ${CPP_SOURCE}/MPSource.cpp ${CPP_SOURCE}/Graphics.cpp ${CPP_SOURCE}/ImageProcessing.cpp)
+set (CPP_TEST_SOURCE src/test/cpp)
+set (COMMON_FILES ${CPP_SOURCE}/Matrix.cpp ${CPP_SOURCE}/MPFilter.cpp ${CPP_SOURCE}/MPSource.cpp ${CPP_SOURCE}/Graphics.cpp ${CPP_SOURCE}/ImageProcessing.cpp ${CPP_SOURCE}/Math.cpp ${CPP_SOURCE}/MP4.cpp)
 set (FREI0R_HOME src/frei0r)
 set (PREPROCESSOR_COMMAND cat)
 set (DIST_NAME bigsh0t)
@@ -57,6 +58,18 @@ macro (build_plugin plugin main_source)
     add_dependencies(create_tar ${plugin} ${plugin}_fe)
 endmacro(build_plugin)
 
+macro (build_test)
+    add_executable(bigsh0t_test ${CPP_TEST_SOURCE}/main.cpp ${COMMON_FILES})
+    if(APPLE)
+        target_link_options(bigsh0t_test PUBLIC "-lomp")
+    endif()
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        target_link_options(bigsh0t_test PUBLIC "-fopenmp")
+    endif()
+    set_target_properties(bigsh0t_test PROPERTIES PREFIX "")
+endmacro(build_test)
+
+
 include_directories ("${PROJECT_SOURCE_DIR}/${FREI0R_HOME}/include")
 
 add_custom_target(create_tar ALL
@@ -69,6 +82,7 @@ add_custom_target(create_tar ALL
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_NAME:bigsh0t_transform_360> ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}/lib/frei0r-1
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_NAME:bigsh0t_eq_to_rect> ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}/lib/frei0r-1
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_NAME:bigsh0t_stabilize_360> ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}/lib/frei0r-1
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_NAME:bigsh0t_zenith_correction> ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}/lib/frei0r-1
 
     COMMAND ${CMAKE_COMMAND} -E tar "cfvz" "${PACKAGE_NAME}.tar.gz" ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}
     COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${PACKAGE_NAME}.zip" --format=zip ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}
@@ -80,3 +94,5 @@ build_plugin(bigsh0t_transform_360 Transform360.cpp)
 build_plugin(bigsh0t_rect_to_eq RectToEq.cpp)
 build_plugin(bigsh0t_eq_to_rect EqToRect.cpp)
 build_plugin(bigsh0t_stabilize_360 Stabilize360.cpp)
+build_plugin(bigsh0t_zenith_correction ZenithCorrection.cpp)
+build_test()

@@ -107,19 +107,19 @@ uint32_t sampleBilinearWrappedClamped (const uint32_t* frame, double x, double y
 
 template<int interpolation>
 void apply_360_map_tmpl(uint32_t* out, uint32_t* ibuf1, float* map, int width, int height, int start_scanline, int num_scanlines) {
-	for (int yi = start_scanline; yi < start_scanline + num_scanlines; yi++) {
+    for (int yi = start_scanline; yi < start_scanline + num_scanlines; yi++) {
         for (int xi = 0; xi < width; xi++) {
-			int idx = yi * width + xi;
-			int midx = 2 * idx;
-			float xt = map[midx];
-			float yt = map[midx + 1];
-			
-			if (xt < 0) {
-				out[idx] = 0;
-				continue;
-			}
+            int idx = yi * width + xi;
+            int midx = 2 * idx;
+            float xt = map[midx];
+            float yt = map[midx + 1];
+            
+            if (xt < 0) {
+                out[idx] = 0;
+                continue;
+            }
 
-			uint32_t pixel;
+            uint32_t pixel;
             switch(interpolation) {
                 case Interpolation::NONE:
                     pixel = sampleNearestNeighbor(ibuf1, xt, yt, width, height);
@@ -129,15 +129,15 @@ void apply_360_map_tmpl(uint32_t* out, uint32_t* ibuf1, float* map, int width, i
                     break;
             }
             out[idx] = pixel;
-		}
-	}
+        }
+    }
 }
 
 void apply_360_map(uint32_t* out, uint32_t* ibuf1, float* map, int width, int height, int start_scanline, int num_scanlines, int interpolation) {
-	switch(interpolation) {
+    switch(interpolation) {
         case Interpolation::NONE:
             apply_360_map_tmpl<Interpolation::NONE>(out, ibuf1, map, width, height, start_scanline, num_scanlines);
-			break;
+            break;
         case Interpolation::BILINEAR:
             apply_360_map_tmpl<Interpolation::BILINEAR>(out, ibuf1, map, width, height, start_scanline, num_scanlines);
             break;
@@ -145,22 +145,11 @@ void apply_360_map(uint32_t* out, uint32_t* ibuf1, float* map, int width, int he
 }
 
 template<int interpolation>
-void transform_360_tmpl(uint32_t* out, uint32_t* ibuf1, int width, int height, int start_scanline, int num_scanlines, double yaw, double pitch, double roll) {
+void transform_360_tmpl(uint32_t* out, uint32_t* ibuf1, int width, int height, int start_scanline, int num_scanlines, const Matrix3& xform) {
 
     int w = width;
     int h = height;
-
-    double yawR = DEG2RADF(yaw);
-    double pitchR = DEG2RADF(pitch);
-    double rollR = DEG2RADF(roll);
-
-    Matrix3 xform;
-
-    xform.identity();
-    rotateX(xform, rollR);
-    rotateY(xform, pitchR);
-    rotateZ(xform, yawR);
-
+    
     int xi, yi;
     double xt, yt;
 
@@ -217,12 +206,34 @@ void transform_360_tmpl(uint32_t* out, uint32_t* ibuf1, int width, int height, i
 }
 
 void transform_360(uint32_t* out, uint32_t* ibuf1, int width, int height, int start_scanline, int num_scanlines, double yaw, double pitch, double roll, int interpolation) {
-	switch(interpolation) {
+    double yawR = DEG2RADF(yaw);
+    double pitchR = DEG2RADF(pitch);
+    double rollR = DEG2RADF(roll);
+
+    Matrix3 xform;
+
+    xform.identity();
+    rotateX(xform, rollR);
+    rotateY(xform, pitchR);
+    rotateZ(xform, yawR);
+
+    switch(interpolation) {
         case Interpolation::NONE:
-			transform_360_tmpl<Interpolation::NONE>(out, ibuf1, width, height, start_scanline, num_scanlines, yaw, pitch, roll);
+            transform_360_tmpl<Interpolation::NONE>(out, ibuf1, width, height, start_scanline, num_scanlines, xform);
             break;
         case Interpolation::BILINEAR:
-            transform_360_tmpl<Interpolation::BILINEAR>(out, ibuf1, width, height, start_scanline, num_scanlines, yaw, pitch, roll);
+            transform_360_tmpl<Interpolation::BILINEAR>(out, ibuf1, width, height, start_scanline, num_scanlines, xform);
+            break;
+    }
+}
+
+void transform_360(uint32_t* out, uint32_t* ibuf1, int width, int height, int start_scanline, int num_scanlines, const Matrix3& xform, int interpolation) {
+    switch(interpolation) {
+        case Interpolation::NONE:
+            transform_360_tmpl<Interpolation::NONE>(out, ibuf1, width, height, start_scanline, num_scanlines, xform);
+            break;
+        case Interpolation::BILINEAR:
+            transform_360_tmpl<Interpolation::BILINEAR>(out, ibuf1, width, height, start_scanline, num_scanlines, xform);
             break;
     }
 }
@@ -283,9 +294,9 @@ void transform_360_map(float* out, int width, int height, int start_scanline, in
                 yt = h - 1;
             }
 
-			int idx = 2 * (yi * width + xi);
+            int idx = 2 * (yi * width + xi);
             out[idx    ] = (float) xt;
-			out[idx + 1] = (float) yt;
+            out[idx + 1] = (float) yt;
         }
     }
 }
