@@ -123,6 +123,8 @@ void rotateQuaternion(Matrix3& m, const Quaternion& q);
 void mulM3V3(const Matrix3& m, const Vector3& v, Vector3& out);
 void mulV3S(const Vector3& v, const double s, Vector3& out);
 void addV3V3(const Vector3& u, const Vector3& v, Vector3& out);
+void crossV3V3(const Vector3& u, const Vector3& v, Vector3& out);
+double dotV3V3(const Vector3& u, const Vector3& v);
 void mulQQ(const Quaternion& q1, const Quaternion& q2, Quaternion& out);
 void invertQ(const Quaternion& v, Quaternion& out);
 void decomposeQ(const Quaternion& q, const Vector3& v, Quaternion& swing, Quaternion& twist);

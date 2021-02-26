@@ -52,6 +52,16 @@ void addV3V3(const Vector3& u, const Vector3& v, Vector3& out) {
     out[2] = u[2] + v[2];
 }
 
+void crossV3V3(const Vector3& u, const Vector3& v, Vector3& out) {
+    out[0] = u[1]*v[2] - u[2]*v[1];
+    out[1] = u[2]*v[0] - u[0]*v[2];
+    out[2] = u[0]*v[1] - u[1]*v[0];
+}
+
+double dotV3V3(const Vector3& u, const Vector3& v) {
+    return u[0] * v[0] + u[1] * v[1] + u[2] * v[2];
+}
+
 void mulQQ(const Quaternion& q1, const Quaternion& q2, Quaternion& out) {
     out[0] = -q1[1] * q2[1] - q1[2] * q2[2] - q1[3] * q2[3] + q1[0] * q2[0];
     out[1] =  q1[1] * q2[0] + q1[2] * q2[3] - q1[3] * q2[2] + q1[0] * q2[1];

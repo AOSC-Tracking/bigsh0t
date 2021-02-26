@@ -259,36 +259,78 @@ bool MP4Parser::readRDT5(std::vector<Quaternion>& zenithData) {
                 
                 for (int i = 0; i < gx.size(); ++i) {
                     Vector3 g;
-                    g[0] = gx[i];
-                    g[1] = gy[i];
-                    g[2] = gz[i];
+                    g[0] = gz[i]; // back front (roll)
+                    g[1] = gx[i]; // left right (pitch)
+                    g[2] = gy[i]; // down up (yaw)
                     
                     g.normalize();
                     
-                    // The roll we must cancel
-                    double roll = atan2(-g[0], -g[1]);                    
+                    // std::cout << g << std::endl;
                     
-                    Matrix3 rollCancel;
-                    rollCancel.identity();
-                    rotateZ(rollCancel, roll);
+                    Vector3 r;
+                    r[0] = -g[1];
+                    r[1] = g[0];
+                    r[2] = 0.0;
+                    if (!r.normalize()) {
+                        // If |r| is too small, then we're almost precisely
+                        // upside down. Use any rotation axis.
+                        r[0] = 1.0;
+                        r[1] = 0.0;
+                        r[2] = 0.0;
+                    }
                     
-                    Vector3 rollCanceled;
-                    mulM3V3(rollCancel, g, rollCanceled);
+                    double a = acos(-g[2]);
                     
-                    // The pitch we must cancel
-                    double pitch = atan2(rollCanceled[2], -rollCanceled[1]);
+                    Quaternion cancelation;
+                    cancelation.setQuaternionRotation(a, r[0], r[1], r[2]);
                     
-                    // Note - different axes
-                    Quaternion rollCancelQ;
-                    rollCancelQ.setQuaternionRotation(roll, 1.0, 0.0, 0.0);
-                    Quaternion pitchCancelQ;
-                    pitchCancelQ.setQuaternionRotation(pitch, 0.0, 1.0, 0.0);
+                    Matrix3 cancelationM;
+                    cancelationM.identity();
+                    rotateQuaternion(cancelationM, cancelation);
                     
-                    Quaternion bothCancelQ;
-                    mulQQ(pitchCancelQ, rollCancelQ, bothCancelQ);
+                    Vector3 canceled;
+                    mulM3V3(cancelationM, g, canceled);
+                    
+                    //std::cout << canceled << std::endl;
+                    
+                    Vector3 ahead;
+                    ahead[0] = 1.0;
+                    ahead[1] = 0.0;
+                    ahead[2] = 0.0;
+                    Vector3 twisted;
+                    mulM3V3(cancelationM, ahead, twisted);
+                    //std::cout << twisted << std::endl;
+                    
+                    
+                    Quaternion untwist;
+                    untwist[0] = 1.0;
+                    untwist[1] = 0.0;
+                    untwist[2] = 0.0;
+                    untwist[3] = 0.0;
+                    
+                    // Attempt to face forward
+                    // if current "forward" is straight down or up, then don't bother.
+                    if (twisted[2] > (-1.0 + 0.000001) && twisted[2] < (1.0 - 0.000001)) {
+                        double untwistA = atan2(twisted[1], twisted[0]);
+                        untwist.setQuaternionRotation(-untwistA, 0, 0, 1);
+                    }
+                    
+                    /*
+                    Matrix3 untwistM;
+                    untwistM.identity();
+                    rotateQuaternion(untwistM, untwist);
+                    
+                    Vector3 untwistedV;
+                    mulM3V3(untwistM, twisted, untwistedV);
+                    std::cout << untwistedV << std::endl;
+                    
+                    std::cout << std::endl;*/
+                    
+                    Quaternion combined;
+                    mulQQ(cancelation, untwist, combined);
                     
                     Quaternion invQ;
-                    invertQ(bothCancelQ, invQ);
+                    invertQ(combined, invQ);
                      
                     zenithData.push_back(invQ);
                 }
