@@ -1,0 +1,7 @@
+#ifndef VERSION_HPP
+#define VERSION_HPP
+
+#define BIGSH0T_VERSION_MAJOR 2
+#define BIGSH0T_VERSION_MINOR 4
+
+#endif

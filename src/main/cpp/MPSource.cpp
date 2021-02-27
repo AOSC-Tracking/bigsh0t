@@ -3,8 +3,8 @@
 #include "omp_compat.h"
 
 void MPSource::updateMP(MPSource* source, double time,
-	                  uint32_t* out,
-                      int width, int height) {
+                        uint32_t* out,
+                        int width, int height) {
     int numThreads = omp_get_max_threads();
     int blockSize = (height / numThreads) + 1;
     if (blockSize < 1) {

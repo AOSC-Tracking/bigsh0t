@@ -6,20 +6,20 @@
 
 class MPSource {
 
-public:
+  public:
     MPSource() {
     }
 
     ~MPSource() {
     }
-    
+
     virtual void updateLines(double time,
-	                    uint32_t* out,
-                        int start, int num) = 0;
-                        
+                             uint32_t* out,
+                             int start, int num) = 0;
+
     static void updateMP(MPSource* filter, double time,
-	                    uint32_t* out,
-                        int width, int height);
+                         uint32_t* out,
+                         int width, int height);
 };
 
 #endif

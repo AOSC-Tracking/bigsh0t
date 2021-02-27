@@ -80,7 +80,7 @@ float MP4Parser::readFloat32LE() {
         float f;  // assuming 32-bit IEEE 754 single-precision
         uint32_t i;    // assuming 32-bit 2's complement int
     } u;
-    
+
     u.i = readUInt32LE();
     return u.f;
 }
@@ -97,13 +97,13 @@ MP4Atom MP4Parser::readAtom() {
     hdr.valid = true;
     hdr.pos = file.tellg();
     hdr.headerSize = 0;
-    
+
     hdr.size = readUInt32();
     hdr.headerSize += 4;
-    
+
     hdr.name = readUInt32();
     hdr.headerSize += 4;
-    
+
     if (hdr.size == 1) {
         hdr.size = readUInt64();
         hdr.headerSize += 8;
@@ -112,12 +112,12 @@ MP4Atom MP4Parser::readAtom() {
         file.read(reinterpret_cast<char*>(hdr.usertype), 16);
         hdr.headerSize += 16;
     }
-    
+
     if (file.fail()) {
         hdr.valid = false;
     }
     return hdr;
-    
+
 }
 
 void MP4Parser::skip(const MP4Atom& atom) {
@@ -189,13 +189,13 @@ bool MP4Parser::readRDTH(std::vector<Quaternion>& zenithData) {
                 for (uint32_t frame = 0; frame < frames; ++frame) {
                     uint32_t a = readUInt32LE(); // Some kind of timer
                     uint32_t b = readUInt32LE(); // Always zero
-                    
+
                     Quaternion q;
                     q[0] = readFloat32LE(); // First is rotation amount
                     q[2] = readFloat32LE(); // Second is pitch
                     q[1] = readFloat32LE(); // third is roll
                     q[3] = -readFloat32LE(); // fourth is yaw
-                    
+
                     zenithData.push_back(q);
                 }
                 return true;
@@ -217,56 +217,56 @@ bool MP4Parser::readRDT5(std::vector<Quaternion>& zenithData) {
                 // frames-times-two = 9384
                 // 56 bytes leftover. 8 bytes MP4 Atom. 48 bytes more
                 uint32_t frames = readUInt32();
-                
+
                 uint32_t unknown1 = readUInt32();
                 uint32_t unknown2 = readUInt32();
                 uint32_t unknown3 = readUInt32();
                 uint32_t unknown4 = readUInt32();
                 uint32_t unknown5 = readUInt32();
-                
+
                 std::vector<double> gx;
                 std::vector<double> gy;
                 std::vector<double> gz;
-                
+
                 for (uint32_t frame = 0; frame < frames; ++frame) {
                     int16_t a = readInt16(); // Gravity (-left right+)
                     int16_t b = readInt16(); // Gravity (-down up+)
                     int16_t c = readInt16(); // Gravity (-back front+)
-                    int16_t d = readInt16(); 
-                    int16_t e = readInt16(); 
+                    int16_t d = readInt16();
+                    int16_t e = readInt16();
                     int16_t f = readInt16();
-                    
+
                     Vector3 g;
                     g[0] = a / 16384.0;
                     g[1] = b / 16384.0;
                     g[2] = c / 16384.0;
-                    
+
                     if (g.norm2() < 0.1) {
                         g[0] = 0;
                         g[1] = -1.0;
                         g[2] = 0;
                     }
                     g.normalize();
-                    
+
                     gx.push_back(g[0]);
                     gy.push_back(g[1]);
                     gz.push_back(g[2]);
                 }
-                
+
                 smooth (gx, 16, 0);
                 smooth (gy, 16, 0);
                 smooth (gz, 16, 0);
-                
+
                 for (int i = 0; i < gx.size(); ++i) {
                     Vector3 g;
                     g[0] = gz[i]; // back front (roll)
                     g[1] = gx[i]; // left right (pitch)
                     g[2] = gy[i]; // down up (yaw)
-                    
+
                     g.normalize();
-                    
+
                     // std::cout << g << std::endl;
-                    
+
                     Vector3 r;
                     r[0] = -g[1];
                     r[1] = g[0];
@@ -278,21 +278,21 @@ bool MP4Parser::readRDT5(std::vector<Quaternion>& zenithData) {
                         r[1] = 0.0;
                         r[2] = 0.0;
                     }
-                    
+
                     double a = acos(-g[2]);
-                    
+
                     Quaternion cancelation;
                     cancelation.setQuaternionRotation(a, r[0], r[1], r[2]);
-                    
+
                     Matrix3 cancelationM;
                     cancelationM.identity();
                     rotateQuaternion(cancelationM, cancelation);
-                    
+
                     Vector3 canceled;
                     mulM3V3(cancelationM, g, canceled);
-                    
+
                     //std::cout << canceled << std::endl;
-                    
+
                     Vector3 ahead;
                     ahead[0] = 1.0;
                     ahead[1] = 0.0;
@@ -300,41 +300,41 @@ bool MP4Parser::readRDT5(std::vector<Quaternion>& zenithData) {
                     Vector3 twisted;
                     mulM3V3(cancelationM, ahead, twisted);
                     //std::cout << twisted << std::endl;
-                    
-                    
+
+
                     Quaternion untwist;
                     untwist[0] = 1.0;
                     untwist[1] = 0.0;
                     untwist[2] = 0.0;
                     untwist[3] = 0.0;
-                    
+
                     // Attempt to face forward
                     // if current "forward" is straight down or up, then don't bother.
                     if (twisted[2] > (-1.0 + 0.000001) && twisted[2] < (1.0 - 0.000001)) {
                         double untwistA = atan2(twisted[1], twisted[0]);
                         untwist.setQuaternionRotation(-untwistA, 0, 0, 1);
                     }
-                    
+
                     /*
                     Matrix3 untwistM;
                     untwistM.identity();
                     rotateQuaternion(untwistM, untwist);
-                    
+
                     Vector3 untwistedV;
                     mulM3V3(untwistM, twisted, untwistedV);
                     std::cout << untwistedV << std::endl;
-                    
+
                     std::cout << std::endl;*/
-                    
+
                     Quaternion combined;
                     mulQQ(cancelation, untwist, combined);
-                    
+
                     Quaternion invQ;
                     invertQ(combined, invQ);
-                     
+
                     zenithData.push_back(invQ);
                 }
-                
+
                 return true;
             }
         }

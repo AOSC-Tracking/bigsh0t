@@ -9,6 +9,7 @@
 #include "ImageProcessing.hpp"
 #include "Frei0rParameter.hpp"
 #include "Frei0rFilter.hpp"
+#include "Version.hpp"
 
 #define SEQ_HEMI_TO_EQUIRECT_PROJECTION_EQUIDISTANT_FISHEYE 1
 #define INTERP_NONE 0
@@ -16,7 +17,7 @@
 
 class Transform360 : public Frei0rFilter, MPFilter {
 
-public:
+  public:
     Frei0rParameter<double,double> yaw;
     Frei0rParameter<double,double> pitch;
     Frei0rParameter<double,double> roll;
@@ -102,8 +103,8 @@ public:
     }
 
     virtual void updateLines(double time,
-                        uint32_t* out,
-                        const uint32_t* in, int start, int num) {
+                             uint32_t* out,
+                             const uint32_t* in, int start, int num) {
         if (mapHits > 16) {
             if (updateMap) {
                 transform_360_map(map, width, height, start, num, yaw, pitch, roll);
@@ -116,6 +117,6 @@ public:
 };
 
 frei0r::construct<Transform360> plugin("transform_360",
-                "Rotates an equirectangular map.",
-                "Leo Sutic <leo@sutic.nu>",
-                2, 2, F0R_COLOR_MODEL_PACKED32);
+                                       "Rotates an equirectangular map.",
+                                       "Leo Sutic <leo@sutic.nu>",
+                                       BIGSH0T_VERSION_MAJOR, BIGSH0T_VERSION_MINOR, F0R_COLOR_MODEL_PACKED32);

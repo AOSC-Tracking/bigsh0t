@@ -7,37 +7,37 @@
 
 template<unsigned int R, unsigned int C>
 class Matrix {
-public:
+  public:
     Matrix() {
     }
-    
+
     Matrix(const Matrix& other) {
         for (int i = 0; i < rows * cols; ++i) {
             elements[i] = other.elements[i];
         }
     }
-    
+
     void zero() {
         for (int i = 0; i < rows * cols; ++i) {
             elements[i] = 0;
         }
     }
-    
+
     void identity() {
         zero();
         for (int i = 0; i < rows; ++i) {
             elements[i * C + i] = 1;
         }
     }
-    
+
     double& operator[](int index) {
         return elements[index];
-    } 
-    
+    }
+
     double const& operator[](int index) const {
         return elements[index];
     }
-    
+
     double norm2() const {
         double sum = 0;
         for (int i = 0; i < rows * cols; ++i) {
@@ -46,11 +46,11 @@ public:
         }
         return sum;
     }
-    
+
     double norm() const {
         return sqrt(norm2());
     }
-    
+
     bool normalize() {
         double n = norm();
         if (n < 0.000001) {
@@ -62,14 +62,14 @@ public:
         }
         return true;
     }
-    
+
     void prepend(Matrix<R,C>& other) {
         Matrix<R,C> res;
         res.zero();
         for (int i = 0; i < rows; ++i) {
             for (int j = 0; j < cols; ++j) {
                 for (int k = 0; k < cols; ++k) {
-                   res[i * cols + j] += other[i * cols + k] * elements[k * cols + j]; 
+                    res[i * cols + j] += other[i * cols + k] * elements[k * cols + j];
                 }
             }
         }
@@ -77,7 +77,7 @@ public:
             elements[i] = res[i];
         }
     }
-    
+
     void setQuaternionRotation(double a, double x, double y, double z) {
         double s = sin(a / 2);
         double c = cos(a / 2);
@@ -86,8 +86,8 @@ public:
         elements[2] = s * y;
         elements[3] = s * z;
     }
-    
-private:
+
+  private:
     const int rows = R;
     const int cols = C;
     double elements[R * C];

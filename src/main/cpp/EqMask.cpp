@@ -1,33 +1,30 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
-#include "frei0r.hpp"
-#include "Matrix.hpp"
-#include "MPFilter.hpp"
-#include "Frei0rParameter.hpp"
-#include "Frei0rFilter.hpp"
 #include <limits>
 #include <climits>
 #include <cmath>
 #include <mutex>
 
-#ifndef M_PI
-#define M_PI           3.14159265358979323846
-#endif
-#define DEG2RADF(x) ((x) * M_PI / 180.0)
+#include "frei0r.hpp"
+#include "Matrix.hpp"
+#include "MPFilter.hpp"
+#include "Frei0rParameter.hpp"
+#include "Frei0rFilter.hpp"
+#include "Math.hpp"
 
 
 class EqMask : public Frei0rFilter, MPFilter {
 
-public:
+  public:
     Frei0rParameter<double,double> hfov0;
-	Frei0rParameter<double,double> hfov1;
+    Frei0rParameter<double,double> hfov1;
     Frei0rParameter<double,double> vfov0;
     Frei0rParameter<double,double> vfov1;
     int interpolation;
 
-	std::mutex lock;
+    std::mutex lock;
 
-	unsigned char* map;
-	bool updateMap;
+    unsigned char* map;
+    bool updateMap;
 
     EqMask(unsigned int width, unsigned int height) : Frei0rFilter(width, height) {
         hfov0 = 160.0;
@@ -35,7 +32,7 @@ public:
         vfov0 = 120.0;
         vfov1 = 140.0;
 
-		map = NULL;
+        map = NULL;
 
         interpolation = 0;
 
@@ -46,49 +43,49 @@ public:
     }
 
     ~EqMask() {
-		if (map != NULL) {
-			free (map);
-		}
+        if (map != NULL) {
+            free (map);
+        }
     }
 
     virtual void update(double time,
-	                    uint32_t* out,
+                        uint32_t* out,
                         const uint32_t* in) {
 
-		// frei0r filter instances are not thread-safe. Shotcut ignores that, so we'll
-		// deal with it by wrapping the execution in a mutex
-		std::lock_guard<std::mutex> guard(lock);
+        // frei0r filter instances are not thread-safe. Shotcut ignores that, so we'll
+        // deal with it by wrapping the execution in a mutex
+        std::lock_guard<std::mutex> guard(lock);
 
-		if (map == NULL || hfov0.changed() || hfov1.changed() || vfov0.changed() || vfov1.changed()) {
-			if (map == NULL) {
-				map = (unsigned char*) malloc (width * height);
-			}
-			updateMap = true;
-		} else {
-			updateMap = false;
-		}
+        if (map == NULL || hfov0.changed() || hfov1.changed() || vfov0.changed() || vfov1.changed()) {
+            if (map == NULL) {
+                map = (unsigned char*) malloc (width * height);
+            }
+            updateMap = true;
+        } else {
+            updateMap = false;
+        }
 
         MPFilter::updateMP(this, time, out, in, width, height);
     }
 
     virtual void updateLines(double time,
-	                    uint32_t* out,
-                        const uint32_t* in,
-                        int start, int num) {
-	    if (updateMap) {
-			makeMap(start, num);
-		}
-		applyMap(out, in, start, num);
-	}
+                             uint32_t* out,
+                             const uint32_t* in,
+                             int start, int num) {
+        if (updateMap) {
+            makeMap(start, num);
+        }
+        applyMap(out, in, start, num);
+    }
 
-	void applyMap (uint32_t* out,
+    void applyMap (uint32_t* out,
                    const uint32_t* in,
                    int start, int num) {
 
-       for (int y = start; y < (start + num); ++y) {
+        for (int y = start; y < (start + num); ++y) {
             for (unsigned int x = 0; x < width; ++x) {
                 int offset = y * width + x;
-				int vInt = map[offset];
+                int vInt = map[offset];
                 unsigned char* inP = (unsigned char*) (in + offset);
                 unsigned char* outP = (unsigned char*) (out + offset);
                 for (int c = 0; c < 3; ++c) {
@@ -96,9 +93,9 @@ public:
                 }
             }
         }
-	}
+    }
 
-	void makeMap (int start, int num) {
+    void makeMap (int start, int num) {
         double coshfov0 = cos(DEG2RADF(hfov0.read()) / 2);
         double coshfov1 = cos(DEG2RADF(hfov1.read()) / 2);
         double coshfovd = coshfov0 - coshfov1;
@@ -146,23 +143,23 @@ public:
                     vInt = 0;
                 }
                 int offset = y * width + x;
-				map[offset] = (unsigned char) vInt;
+                map[offset] = (unsigned char) vInt;
             }
         }
     }
 
-protected:
+  protected:
     double smooth (double v) {
         double v2 = 1.0 - (1.0 - v) * (1.0 - v);
         double blend = 1.0 - v;
         return v * blend + (1.0 - blend) * v2;
     }
 
-private:
+  private:
 
 };
 
 frei0r::construct<EqMask> plugin("eq_mask",
-                "Masks part of the VR sphere.",
-                "Leo Sutic <leo@sutic.nu>",
-                2, 2, F0R_COLOR_MODEL_RGBA8888);
+                                 "Masks part of the VR sphere.",
+                                 "Leo Sutic <leo@sutic.nu>",
+                                 2, 2, F0R_COLOR_MODEL_RGBA8888);

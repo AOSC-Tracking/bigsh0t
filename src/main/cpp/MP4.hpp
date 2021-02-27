@@ -27,14 +27,14 @@ const uint32_t TYPE_RDT8 = 0x52445438;
 
 
 class MP4Atom {
-public:
+  public:
     uint64_t pos;
     uint64_t size;
     uint32_t name;
     uint8_t usertype[16];
     uint64_t headerSize;
     bool valid;
-    
+
     std::string nameString() {
         char buf[5];
         buf[0] = static_cast<char>((name >> 24) & 0xff);
@@ -47,9 +47,9 @@ public:
 };
 
 class MP4Parser {
-public:
+  public:
     MP4Parser(const std::string& filename);
-    
+
     uint8_t readUInt8();
     uint32_t readUInt32();
     uint32_t readUInt32LE();
@@ -68,8 +68,8 @@ public:
     bool readRDTH(std::vector<Quaternion>& zenithData);
     bool readRDT5(std::vector<Quaternion>& zenithData);
     void readZenithData(std::vector<Quaternion>& zenithData);
-    
-private:
+
+  private:
     std::ifstream file;
 };
 

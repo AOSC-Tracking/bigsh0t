@@ -8,9 +8,15 @@ void rotateX(Matrix3& m, double a) {
     double ca = cos(a);
     double sa = sin(a);
     Matrix3 rm;
-    rm[0] = 1.0; rm[1] = 0.0; rm[2] = 0.0;
-    rm[3] = 0.0; rm[4] = ca;  rm[5] = -sa;
-    rm[6] = 0.0; rm[7] = sa;  rm[8] = ca;
+    rm[0] = 1.0;
+    rm[1] = 0.0;
+    rm[2] = 0.0;
+    rm[3] = 0.0;
+    rm[4] = ca;
+    rm[5] = -sa;
+    rm[6] = 0.0;
+    rm[7] = sa;
+    rm[8] = ca;
     m.prepend(rm);
 }
 
@@ -18,9 +24,15 @@ void rotateY(Matrix3& m, double a) {
     double ca = cos(a);
     double sa = sin(a);
     Matrix3 rm;
-    rm[0] = ca;  rm[1] = 0.0; rm[2] = sa;
-    rm[3] = 0.0; rm[4] = 1.0; rm[5] = 0.0;
-    rm[6] = -sa; rm[7] = 0.0; rm[8] = ca;
+    rm[0] = ca;
+    rm[1] = 0.0;
+    rm[2] = sa;
+    rm[3] = 0.0;
+    rm[4] = 1.0;
+    rm[5] = 0.0;
+    rm[6] = -sa;
+    rm[7] = 0.0;
+    rm[8] = ca;
     m.prepend(rm);
 }
 
@@ -28,9 +40,15 @@ void rotateZ(Matrix3& m, double a) {
     double ca = cos(a);
     double sa = sin(a);
     Matrix3 rm;
-    rm[0] = ca;  rm[1] = -sa; rm[2] = 0.0;
-    rm[3] = sa;  rm[4] =  ca; rm[5] = 0.0;
-    rm[6] = 0.0; rm[7] = 0.0; rm[8] = 1.0;
+    rm[0] = ca;
+    rm[1] = -sa;
+    rm[2] = 0.0;
+    rm[3] = sa;
+    rm[4] =  ca;
+    rm[5] = 0.0;
+    rm[6] = 0.0;
+    rm[7] = 0.0;
+    rm[8] = 1.0;
     m.prepend(rm);
 }
 
@@ -82,11 +100,17 @@ void rotateQuaternion(Matrix3& m, const Quaternion& q) {
     double i = q[1];
     double j = q[2];
     double k = q[3];
-    
+
     Matrix3 rm;
-    rm[0] = 1 - 2*s*(j*j + k*k);  rm[1] =     2*s*(i*j - k*r); rm[2] =     2*s*(i*k + j*r);
-    rm[3] =     2*s*(i*j + k*r);  rm[4] = 1 - 2*s*(i*i + k*k); rm[5] =     2*s*(j*k - i*r);
-    rm[6] =     2*s*(i*k - j*r);  rm[7] =     2*s*(j*k + i*r); rm[8] = 1 - 2*s*(i*i + j*j);
+    rm[0] = 1 - 2*s*(j*j + k*k);
+    rm[1] =     2*s*(i*j - k*r);
+    rm[2] =     2*s*(i*k + j*r);
+    rm[3] =     2*s*(i*j + k*r);
+    rm[4] = 1 - 2*s*(i*i + k*k);
+    rm[5] =     2*s*(j*k - i*r);
+    rm[6] =     2*s*(i*k - j*r);
+    rm[7] =     2*s*(j*k + i*r);
+    rm[8] = 1 - 2*s*(i*i + j*j);
     m.prepend(rm);
 }
 
@@ -103,10 +127,10 @@ void decomposeQ(const Quaternion& q, const Vector3& v, Quaternion& swing, Quater
     //p = projection(ra, v); // return projection v1 on to v2  (parallel component)
     Vector3 vNorm(v);
     vNorm.normalize();
-    
+
     double scalarP = ra[0] * vNorm[0] + ra[1] * vNorm[1] + ra[2] * vNorm[2];
     mulV3S(vNorm, scalarP, p);
-    
+
     twist[0] = q[0];
     twist[1] = p[0];
     twist[2] = p[1];

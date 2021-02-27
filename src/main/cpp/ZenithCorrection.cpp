@@ -12,57 +12,58 @@
 #include "Frei0rParameter.hpp"
 #include "Frei0rFilter.hpp"
 #include "MP4.hpp"
+#include "Version.hpp"
 
 #define SEQ_HEMI_TO_EQUIRECT_PROJECTION_EQUIDISTANT_FISHEYE 1
 #define INTERP_NONE 0
 
 
 class ZenithCorrection : public Frei0rFilter, MPFilter {
-    
-    public:
+
+  public:
     Frei0rParameter<double,double> yaw;
     Frei0rParameter<double,double> pitch;
     Frei0rParameter<double,double> roll;
     Frei0rParameter<int,double> interpolation;
-    
+
     bool enableSmoothYaw;
     Frei0rParameter<int,double> smoothYaw;
     Frei0rParameter<double,double> timeBiasYaw;
-    
+
     std::string analysisFile;
     Frei0rParameter<double,double> clipOffset;
-    
+
     std::mutex lock;
-    
+
     std::vector<Quaternion> zenithData;
     std::vector<double> yawCorrection;
     std::string zenithDataFrom;
     double frameRate;
-    
+
     ZenithCorrection(unsigned int width, unsigned int height) : Frei0rFilter(width, height) {
         enableSmoothYaw = false;
         timeBiasYaw = 0.0;
         smoothYaw = 120;
         clipOffset = 0.0;
-        
+
         analysisFile = std::string("");
         zenithDataFrom = std::string("");
-        
+
         interpolation = Interpolation::BILINEAR;
-        
+
         register_param(analysisFile, "analysisFile", "");
         register_fparam(clipOffset, "clipOffset", "");
-        
+
         register_param(enableSmoothYaw, "enableSmoothYaw", "");
         register_fparam(smoothYaw, "smoothYaw", "");
         register_fparam(timeBiasYaw, "timeBiasYaw", "");
-        
+
         register_fparam(interpolation, "interpolation", "");
     }
-    
+
     ~ZenithCorrection() {
     }
-    
+
     std::string parseFileName (const std::string& fileName) {
         if (fileName.length() > 8 && fileName.compare(0, 8, std::string("file:///")) == 0) {
             if (fileName.length() > 10 && fileName.at (9) == ':') {
@@ -76,17 +77,17 @@ class ZenithCorrection : public Frei0rFilter, MPFilter {
             return fileName;
         }
     }
-    
+
     void loadData() {
         if (analysisFile == zenithDataFrom) {
             return;
         }
-        
+
         zenithData.clear();
         if (analysisFile == std::string("")) {
             return;
         }
-        
+
         zenithDataFrom = analysisFile;
         MP4Parser parser(parseFileName(analysisFile));
         if (parser.valid()) {
@@ -94,11 +95,11 @@ class ZenithCorrection : public Frei0rFilter, MPFilter {
             if (duration > 0) {
                 parser.readZenithData(zenithData);
                 frameRate = zenithData.size() / duration;
-            }   
+            }
         }
         parser.close();
     }
-    
+
     void createYawCorrection() {
         yawCorrection.clear();
         yawCorrection.push_back(0.0);
@@ -108,10 +109,10 @@ class ZenithCorrection : public Frei0rFilter, MPFilter {
             Quaternion prev;
             invertQ(zenithData[i -1], prev);
             Quaternion current = Quaternion(zenithData[i]);
-            
+
             Quaternion delta;
             mulQQ(current, prev, delta);
-            
+
             Quaternion swing;
             Quaternion twist;
             Vector3 up;
@@ -119,50 +120,50 @@ class ZenithCorrection : public Frei0rFilter, MPFilter {
             up[1] = 0;
             up[2] = 1;
             decomposeQ(delta, up, swing, twist);
-            
+
             Vector3 ahead;
             ahead[0] = 1;
             ahead[1] = 0;
             ahead[2] = 0;
-            
+
             Matrix3 twistM;
             twistM.identity();
             rotateQuaternion(twistM, twist);
-            
+
             Vector3 deltaYaw;
             mulM3V3(twistM, ahead, deltaYaw);
-            
+
             double a = atan2(deltaYaw[1], deltaYaw[0]);
-            
+
             acc += a;
-            
+
             yawCorrection.push_back(acc);
         }
-        
-        smooth(yawCorrection, smoothYaw, timeBiasYaw / 100.0);        
+
+        smooth(yawCorrection, smoothYaw, timeBiasYaw / 100.0);
     }
-    
+
     virtual void update(double time,
-    uint32_t* out,
-    const uint32_t* in) {
+                        uint32_t* out,
+                        const uint32_t* in) {
         // frei0r filter instances are not thread-safe. Shotcut ignores that, so we'll
         // deal with it by wrapping the execution in a mutex
         std::lock_guard<std::mutex> guard(lock);
-        
+
         loadData();
-        
+
         if (enableSmoothYaw) {
             createYawCorrection();
         } else {
             yawCorrection.clear();
         }
-        
+
         MPFilter::updateMP(this, time, out, in, width, height);
-        
+
         /*
         double clipTime = time + clipOffset;
         int frame = (int) round(clipTime * frameRate);
-                
+
         char buf[1024];
         snprintf (buf, 1024,
         "F %d FR %f ZD %d YC %d SY %s\n",
@@ -170,15 +171,15 @@ class ZenithCorrection : public Frei0rFilter, MPFilter {
         enableSmoothYaw ? "ON" : "OFF"
         );
         std::string status(buf);
-        
+
         Graphics g(out, width, height);
         g.drawText(8, 8, status, 0, 0xff0000ff);
         */
     }
-    
+
     virtual void updateLines(double time,
-    uint32_t* out,
-    const uint32_t* in, int start, int num) {
+                             uint32_t* out,
+                             const uint32_t* in, int start, int num) {
         Matrix3 xform;
         xform.identity();
         double clipTime = time + clipOffset;
@@ -191,12 +192,12 @@ class ZenithCorrection : public Frei0rFilter, MPFilter {
             invertQ(zenithData[frame], q);
             rotateQuaternion(xform, q);
         }
-        
+
         transform_360(out, (uint32_t*) in, width, height, start, num, xform, interpolation);
     }
 };
 
 frei0r::construct<ZenithCorrection> plugin("zenith_correction",
-"Applies video zenith correction data.",
-"Leo Sutic <leo@sutic.nu>",
-2, 3, F0R_COLOR_MODEL_PACKED32);
+        "Applies video zenith correction data.",
+        "Leo Sutic <leo@sutic.nu>",
+        BIGSH0T_VERSION_MAJOR, BIGSH0T_VERSION_MINOR, F0R_COLOR_MODEL_PACKED32);

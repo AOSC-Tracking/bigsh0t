@@ -7,7 +7,6 @@
 #include <mutex>
 #include <fstream>
 #include <algorithm>
-#include <string.h>
 #include "frei0r.hpp"
 #include "Matrix.hpp"
 #include "MPFilter.hpp"
@@ -16,13 +15,14 @@
 #include "Frei0rParameter.hpp"
 #include "Frei0rFilter.hpp"
 #include "omp_compat.h"
+#include "Version.hpp"
 
 #define ROTATION_TIME_INSTANT (1.0 / 10000.0)
 
 
 class Rotation {
 
-    public:
+  public:
     double previousTime;
     double time;
     double yaw;
@@ -79,7 +79,7 @@ class Rotation {
 };
 
 class RotationSamples {
-    public:
+  public:
     std::vector<Rotation> rotations;
     double minSpan;
 
@@ -101,7 +101,7 @@ class RotationSamples {
         } else {
             rotations.insert (rotations.begin() + pos, rot);
         }
-        
+
         updateMinSpan();
     }
 
@@ -187,7 +187,7 @@ class RotationSamples {
         }
         return -1;
     }
-    
+
     int lookup(const double time) {
         return indexOf(time - getMinSpan() / 2);
     }
@@ -204,7 +204,7 @@ class RotationSamples {
             }
         }
     }
-    
+
     bool hasOverlapping (const Rotation& r) {
         for (int i = ((int) rotations.size()) - 1; i >= 0; --i) {
             Rotation r2 = rotations[i];
@@ -214,7 +214,7 @@ class RotationSamples {
         }
         return false;
     }
-    
+
     void updateMinSpan() {
         for (Rotation& r : rotations) {
             double s = r.span();
@@ -223,16 +223,16 @@ class RotationSamples {
             }
         }
     }
-    
+
     double getMinSpan() {
         return minSpan;
     }
-    
+
     int findFirstSkip () {
         if (size () < 2) {
             return -1;
         }
-        
+
         double intervalSum = 0;
         for (int i = 1; i < rotations.size(); ++i) {
             Rotation& r0 = rotations[i - 1];
@@ -304,16 +304,16 @@ class RotationSamples {
         if (window < 1) {
             window = 1;
         }
-        
+
         double acc = 0.0;
         std::vector<double> sums;
         for (double& v : samples) {
             acc += v;
             sums.push_back(acc);
         }
-        
+
         windowBias = (windowBias + 1.0) / 2;
-        
+
         for (int i = 0; i < samples.size(); ++i) {
             int start = i - window + (int) (windowBias * window) - 1;
             int end = start + window;
@@ -326,13 +326,13 @@ class RotationSamples {
             int num = end - start;
             double v0 = start < 0 ? 0 : sums[start];
             double v1 = sums[end];
-            
+
             double v = (v1 - v0) / num;
             samples[i] = v;
         }
         updateMinSpan();
     }
-    
+
     void correct (int wYaw, int wPitch, int wRoll, double bYaw, double bPitch, double bRoll, RotationSamples& dest) {
         std::vector<Rotation> accs;
         {
@@ -360,10 +360,10 @@ class RotationSamples {
             smoothComponent (cYaw, wYaw, bYaw);
             smoothComponent (cPitch, wPitch, bPitch);
             smoothComponent (cRoll, wRoll, bRoll);
-            
+
             for (int i = 0; i < accs.size(); ++i) {
                 Rotation& r = accs[i];
-                
+
                 Rotation smooth (r.previousTime, r.time, cYaw[i], cPitch[i], cRoll[i], false);
 
                 smooths.push_back (smooth);
@@ -378,7 +378,7 @@ class RotationSamples {
             dest.add(correction);
         }
     }
-    
+
     void merge (RotationSamples& other) {
         for (size_t i = 0; i < other.rotations.size(); ++i) {
             const Rotation& otherRot = other.rotations[i];
@@ -387,7 +387,7 @@ class RotationSamples {
             }
         }
     }
-    
+
     void clearUpdated () {
         for (Rotation& r : rotations) {
             r.updated = false;
@@ -397,13 +397,13 @@ class RotationSamples {
 
 inline short toGray(uint32_t color) {
     return
-    ((color      ) & 0xff) +
-    ((color >>  8) & 0xff) +
-    ((color >> 16) & 0xff);
+        ((color      ) & 0xff) +
+        ((color >>  8) & 0xff) +
+        ((color >> 16) & 0xff);
 }
 
 class TrackPoint {
-    public:
+  public:
 
     TrackPoint (int x, int y, int sampleRadius, int searchRadius, int subpixels) {
         this->x = x;
@@ -414,7 +414,7 @@ class TrackPoint {
         this->searchRadius = searchRadius;
         this->subpixels = subpixels;
         this->subpixelFactor = 1.0 / (subpixels > 1 ? subpixels : 1);
-        
+
         this->subcx = 0;
         this->subcy = 0;
 
@@ -445,7 +445,7 @@ class TrackPoint {
         }
         return error;
     }
-    
+
     int matchSubpixel (Graphics& g, const uint32_t* buffer, int atx, int aty, double spx, double spy, int abortAtError) {
         int error = 0;
         int sbp = 0;
@@ -499,7 +499,7 @@ class TrackPoint {
                 }
             }
         }
-        
+
         subcx = 0;
         subcy = 0;
         for (int radius = 1; radius <= subpixels / 2; ++radius) {
@@ -522,8 +522,8 @@ class TrackPoint {
     void markOrigin (Graphics& g) {
         g.drawRect(x - sampleRadius, y - sampleRadius, 2 * sampleRadius, 2 * sampleRadius, 0xffffff00, 0xff0000ff);
         g.drawRect(x - sampleRadius + 1, y - sampleRadius + 1, 2 * sampleRadius - 2, 2 * sampleRadius - 2, 0xffffff00, 0xff0000ff);
-        g.drawRect(x - sampleRadius - searchRadius, y - sampleRadius - searchRadius, 
-            2 * searchRadius + 2 * sampleRadius, 2 * searchRadius + 2 * sampleRadius, 0xffff0000, 0xff00ffff);
+        g.drawRect(x - sampleRadius - searchRadius, y - sampleRadius - searchRadius,
+                   2 * searchRadius + 2 * sampleRadius, 2 * searchRadius + 2 * sampleRadius, 0xffff0000, 0xff00ffff);
     }
 
     void markOriginTransformed (Graphics& g) {
@@ -552,7 +552,7 @@ class TrackPoint {
         this->active = active;
     }
 
-    private:
+  private:
     int x;
     int y;
     int cx;
@@ -569,7 +569,7 @@ class TrackPoint {
 };
 
 class TrackPointMatrix {
-    public:
+  public:
     TrackPointMatrix (int x, int y, int numh, int numv, int offset, int sampleRadius, int searchRadius, int subpixels) {
         this->x = x;
         this->y = y;
@@ -649,7 +649,7 @@ class TrackPointMatrix {
         motion[1] = acc[1];
     }
 
-    private:
+  private:
     int x;
     int y;
     int sampleRadius;
@@ -661,7 +661,7 @@ class TrackPointMatrix {
 
 class Stabilize360 : public Frei0rFilter, MPFilter {
 
-    private:
+  private:
     bool previousAnalyzeState;
     bool initializedAnalyzeState;
 
@@ -674,7 +674,7 @@ class Stabilize360 : public Frei0rFilter, MPFilter {
 
     std::mutex lock;
 
-    public:
+  public:
     Frei0rParameter<int,double> interpolation;
     bool analyze;
     bool useBackTrackpoints;
@@ -692,7 +692,7 @@ class Stabilize360 : public Frei0rFilter, MPFilter {
     Frei0rParameter<int,double> smoothYaw;
     Frei0rParameter<int,double> smoothPitch;
     Frei0rParameter<int,double> smoothRoll;
-    
+
     Frei0rParameter<double,double> timeBiasYaw;
     Frei0rParameter<double,double> timeBiasPitch;
     Frei0rParameter<double,double> timeBiasRoll;
@@ -735,7 +735,7 @@ class Stabilize360 : public Frei0rFilter, MPFilter {
         smoothYaw = 120;
         smoothPitch = 120;
         smoothRoll = 120;
-        
+
         register_param(analysisFile, "analysisFile", "");
         register_fparam(clipOffset, "clipOffset", "");
         register_fparam(interpolation, "interpolation", "");
@@ -752,7 +752,7 @@ class Stabilize360 : public Frei0rFilter, MPFilter {
         register_fparam(smoothYaw, "smoothYaw", "");
         register_fparam(smoothPitch, "smoothPitch", "");
         register_fparam(smoothRoll, "smoothRoll", "");
-        
+
         register_fparam(timeBiasYaw, "timeBiasYaw", "");
         register_fparam(timeBiasPitch, "timeBiasPitch", "");
         register_fparam(timeBiasRoll, "timeBiasRoll", "");
@@ -775,8 +775,8 @@ class Stabilize360 : public Frei0rFilter, MPFilter {
     }
 
     void updateAnalyzeState(double time,
-    uint32_t* out,
-    const uint32_t* in) {
+                            uint32_t* out,
+                            const uint32_t* in) {
         if (!initializedAnalyzeState) {
             previousAnalyzeState = analyze;
             initializedAnalyzeState = true;
@@ -810,7 +810,7 @@ class Stabilize360 : public Frei0rFilter, MPFilter {
             onDisk.read (analysisFile);
             onDisk.merge (rawSamples);
             onDisk.write (analysisFile);
-            
+
             rawSamples.clear ();
             rawSamples.read (analysisFile);
         }
@@ -820,10 +820,10 @@ class Stabilize360 : public Frei0rFilter, MPFilter {
         rawSamples.clear ();
         if (!analysisFile.empty()) {
             rawSamples.read (analysisFile);
-        }		
+        }
         updateCorrections();
     }
-    
+
     void updateCorrections() {
         corrections.clear ();
         rawSamples.correct (smoothYaw, smoothPitch, smoothRoll, timeBiasYaw / 100.0, timeBiasPitch / 100.0, timeBiasRoll / 100.0, corrections);
@@ -844,7 +844,7 @@ class Stabilize360 : public Frei0rFilter, MPFilter {
         // frei0r filter instances are not thread-safe. Shotcut ignores that, so we'll
         // deal with it by wrapping the execution in a mutex
         std::lock_guard<std::mutex> guard(lock);
-        
+
         double clipTime = time + clipOffset;
 
         updateAnalyzeState (clipTime, out, in);
@@ -960,13 +960,13 @@ class Stabilize360 : public Frei0rFilter, MPFilter {
                 snprintf (skipBuf, 256, "Frame skipped at %.2f s.", rawSamples[skip].time);
             }
             snprintf (buf, 1024,
-            "%s\n"
-            "At %.2fs (%.2fs) %zd frames, from %.2f s to %.2f s\n"
-            "%s\n"
-            "Last frame motion: (%.3f, %.3f, %.3f)", analysisFile.c_str(), 
-            clipTime, time,
-            frames, earliest, latest, skipBuf,
-            yaw, pitch, roll);
+                      "%s\n"
+                      "At %.2fs (%.2fs) %zd frames, from %.2f s to %.2f s\n"
+                      "%s\n"
+                      "Last frame motion: (%.3f, %.3f, %.3f)", analysisFile.c_str(),
+                      clipTime, time,
+                      frames, earliest, latest, skipBuf,
+                      yaw, pitch, roll);
             std::string status(buf);
 
             postXform.drawText(8, 8, status, 0, 0xff0000ff);
@@ -980,17 +980,17 @@ class Stabilize360 : public Frei0rFilter, MPFilter {
             memcpy (previousFrame, in, width * height * sizeof(uint32_t));
         } else {
             if (smoothYaw.changed() || smoothPitch.changed() || smoothRoll.changed() ||
-                timeBiasYaw.changed() || timeBiasPitch.changed() || timeBiasRoll.changed()) {
+                    timeBiasYaw.changed() || timeBiasPitch.changed() || timeBiasRoll.changed()) {
                 updateCorrections();
             }
-                
+
             int correctionIndex = corrections.lookup (clipTime);
             if (correctionIndex >= 0) {
                 Rotation correction = corrections[correctionIndex];
                 view (
-                correction.yaw * stabilizeYaw / 100.0,
-                correction.pitch * stabilizePitch / 100.0,
-                correction.roll * stabilizeRoll / 100.0
+                    correction.yaw * stabilizeYaw / 100.0,
+                    correction.pitch * stabilizePitch / 100.0,
+                    correction.roll * stabilizeRoll / 100.0
                 );
 
                 MPFilter::updateMP(this, time, out, in, width, height);
@@ -1014,13 +1014,13 @@ class Stabilize360 : public Frei0rFilter, MPFilter {
     }
 
     virtual void updateLines(double time,
-    uint32_t* out,
-    const uint32_t* in, int start, int num) {
+                             uint32_t* out,
+                             const uint32_t* in, int start, int num) {
         transform_360(out, (uint32_t*) in, width, height, start, num, yaw, pitch, roll, interpolation);
     }
 };
 
 frei0r::construct<Stabilize360> plugin("stabilize_360",
-"Stabilizes 360 equirectangular footage.",
-"Leo Sutic <leo@sutic.nu>",
-2, 4, F0R_COLOR_MODEL_PACKED32);
+                                       "Stabilizes 360 equirectangular footage.",
+                                       "Leo Sutic <leo@sutic.nu>",
+                                       BIGSH0T_VERSION_MAJOR, BIGSH0T_VERSION_MINOR, F0R_COLOR_MODEL_PACKED32);
