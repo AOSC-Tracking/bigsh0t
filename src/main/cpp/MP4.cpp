@@ -284,12 +284,8 @@ bool MP4Parser::readRDT5(std::vector<Quaternion>& zenithData) {
                     Quaternion cancelation;
                     cancelation.setQuaternionRotation(a, r[0], r[1], r[2]);
 
-                    Matrix3 cancelationM;
-                    cancelationM.identity();
-                    rotateQuaternion(cancelationM, cancelation);
-
                     Vector3 canceled;
-                    mulM3V3(cancelationM, g, canceled);
+                    rotateQV3(cancelation, g, canceled);
 
                     //std::cout << canceled << std::endl;
 
@@ -298,7 +294,8 @@ bool MP4Parser::readRDT5(std::vector<Quaternion>& zenithData) {
                     ahead[1] = 0.0;
                     ahead[2] = 0.0;
                     Vector3 twisted;
-                    mulM3V3(cancelationM, ahead, twisted);
+
+                    rotateQV3(cancelation, ahead, twisted);
                     //std::cout << twisted << std::endl;
 
 

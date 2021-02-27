@@ -120,6 +120,7 @@ void rotateY(Matrix3& m, double a);
 void rotateZ(Matrix3& m, double a);
 void rotateQuaternion(Matrix3& m, const Quaternion& q);
 
+void rotateQV3(const Quaternion& q, const Vector3& v, Vector3& out);
 void mulM3V3(const Matrix3& m, const Vector3& v, Vector3& out);
 void mulV3S(const Vector3& v, const double s, Vector3& out);
 void addV3V3(const Vector3& u, const Vector3& v, Vector3& out);

@@ -94,6 +94,27 @@ void invertQ(const Quaternion& v, Quaternion& out) {
     out[3] = -v[3];
 }
 
+void rotateQV3(const Quaternion& q, const Vector3& v, Vector3& out) {
+    Quaternion vq;
+    vq[0] = 0.0;
+    vq[1] = v[0];
+    vq[2] = v[1];
+    vq[3] = v[2];
+
+    Quaternion r1;
+    mulQQ(q, vq, r1);
+
+    Quaternion qi;
+    invertQ(q, qi);
+
+    Quaternion r2;
+    mulQQ(r1, qi, r2);
+
+    out[0] = r2[1];
+    out[1] = r2[2];
+    out[2] = r2[3];
+}
+
 void rotateQuaternion(Matrix3& m, const Quaternion& q) {
     double s = q.norm();
     double r = q[0];
