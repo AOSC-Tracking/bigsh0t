@@ -4,6 +4,7 @@
 #include <cmath>
 #include <mutex>
 #include <string>
+#include <cstring>
 #include "frei0r.hpp"
 #include "Matrix.hpp"
 #include "Math.hpp"

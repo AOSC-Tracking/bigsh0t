@@ -4,6 +4,7 @@
 #include <cmath>
 #include <vector>
 #include <string>
+#include <cstring>
 #include <mutex>
 #include <fstream>
 #include <algorithm>
