@@ -185,11 +185,11 @@ When you switch to analysis mode, the filter will overlay information on the vid
 
 ### Zenith Correction
 
-Stabilizes 360 footage using the orientation sensor data in the video file. Currently it can 
+Stabilizes 360 footage using the orientation sensor data in the video file. Currently it can read zenith correction data from Ricoh Theta SC and Ricoh Theta SC2 cameras.
 
 #### Parameters
 
- * **File**: Path to file that will be used to store the analysis data.
+ * **File**: Path to video file that will be inspected for sensor data. Typically this is the same file as the clip the filter is applied to.
 
  * **Start Offset**: The offset into the stabilization file that corresponds to the start of this clip. Press the **Undo** button to set it from Shotcut timeline. For example, if you have a 30 second clip, analyze it all, and then split it into three clips of 10 seconds each, then the start offsets should be 0s, 10s, and 20s.
 
