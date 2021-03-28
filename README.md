@@ -25,13 +25,19 @@ The build script comes with its own copy of the Frei0r headers.
 
 ### Windows 64 bit
 
-Make sure that you compile to a 64-bit target. If you compile to 32-bit DLL:s, Shotcut will not be able to load them. Bigsh0t will use OpenMP on Windows.
+Make sure that you compile to a 64-bit target. If you compile to 32-bit DLL:s, Shotcut will not be able to load them. Bigsh0t will use OpenMP on Windows. By default, Bigsh0t will use SSE intrinsics.
 
 ### OSX
 
 Shotcut will use OpenMP and requires it to be installed as when using `brew`:
 
     brew install libomp
+
+By default, Bigsh0t will not use SSE intrinsics.
+
+### Linux
+
+By default, Bigsh0t will not use SSE intrinsics.
 
 ## Install
 
