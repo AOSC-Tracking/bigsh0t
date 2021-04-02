@@ -23,6 +23,11 @@ void testMP4() {
     std::cout << qs.size() << std::endl;
 }
 
+void fail() {
+    throw std::runtime_error("Assertion failed");
+}
+
+
 template<typename T>
 void assertEquals(T actual, T expected) {
     if (actual != expected) {
@@ -30,6 +35,13 @@ void assertEquals(T actual, T expected) {
         throw std::runtime_error("Assertion failed");
     }
 }
+
+void assertTrue(bool condition) {
+    if (!condition) {
+        throw std::runtime_error("Assertion failed");
+    }
+}
+
 
 bool assertComponentDifferenceLessThan(uint32_t a, uint32_t b, int diffmax, char* msg) {
     int c0a = (a >> 24) & 0xff;
@@ -113,8 +125,6 @@ void testBlerp() {
     assertEquals(sseBlerp(frame, 0, 1, width, width + 1, 96, 96, width, height), 0xffffb4a4);
 #endif
 
-    std::cout << "Testing." << std::endl;
-
     for (int x = 0; x < width - 1; ++x) {
         for (int y = 0; y < height - 1; ++y) {
             int xoff = std::rand() % 128;
@@ -127,14 +137,28 @@ void testBlerp() {
             auto a = int64Blerp(frame, baseIdx, baseIdx + 1, baseIdx + width, baseIdx + width + 1, xoff, yoff, width, height);
             if (!assertComponentDifferenceLessThan(a, ref, 3, "i64")) {
                 std::cout << std::hex << frame[baseIdx] << "," << frame[baseIdx + 1] << "," << frame[baseIdx + width] << "," << frame[baseIdx + width + 1] << std::dec << "," << xoff << "," << yoff << std::endl;
-                throw std::runtime_error("Assertion failed");
+                fail();
             }
 
 #ifdef USE_SSE
             auto b = sseBlerp(frame, baseIdx, baseIdx + 1, baseIdx + width, baseIdx + width + 1, xoff, yoff, width, height);
-            assertComponentDifferenceLessThan(b, ref, 3, "sse");
+            if (!assertComponentDifferenceLessThan(b, ref, 3, "sse")) {
+                fail();
+            }
 #endif
         }
+    }
+
+    free (frame);
+}
+
+void benchmarkBlerp() {
+    int width = 4096;
+    int height = 2048;
+    size_t frameSize = width * height;
+    uint32_t* frame = (uint32_t*) malloc(frameSize * sizeof(uint32_t));
+    for (int i = 0; i < frameSize; ++i) {
+        frame[i] = std::rand() & 0xffffffff;
     }
 
     std::cout << "Benchmarking refrence... ";
@@ -198,7 +222,7 @@ void testBlerp() {
 void testFastAtan2() {
     double maxTolerableErr = 2.28e-07;
     double pixelError = (2 * M_PI / maxTolerableErr) / 128;
-    std::cout << maxTolerableErr << " = " << pixelError << std::endl;
+    //std::cout << maxTolerableErr << " = " << pixelError << std::endl;
     double maxErr = 0.0;
     for (int iter = 0; iter < 300000; ++iter) {
         int x = std::rand() % 100000 + 1;
@@ -218,7 +242,8 @@ void testFastAtan2() {
             maxErr = error;
         }
     }
-    std::cout << maxErr << (maxErr <= maxTolerableErr ? " OK" : " FAIL") << std::endl;
+    //std::cout << maxErr << (maxErr <= maxTolerableErr ? " OK" : " FAIL") << std::endl;
+    assertTrue(maxErr <= maxTolerableErr);
 }
 
 void testTransform() {
@@ -230,7 +255,7 @@ void testTransform() {
         frame[i] = std::rand() & 0xffffffff;
     }
 
-    std::cout << "Benchmarking refrence... "; // original was 7190ms, now 3743
+    std::cout << "Benchmarking reference... "; // original was 7190ms, now 3743
     auto startRef = std::chrono::steady_clock::now();
 
     Transform360Support t360(width, height);
@@ -245,8 +270,24 @@ void testTransform() {
     free(frame);
 }
 
+typedef void (*TestCase)();
+
+void runTest(const char* name, TestCase testCase) {
+    try {
+        std::cout << "Running test case " << name << " ... ";
+        testCase();
+        std::cout << "SUCCESS" << std::endl;
+    } catch (std::runtime_error& err) {
+        std::cout << "FAILED" << std::endl;
+        throw err;
+    }
+}
+
+#define RUN_TEST(F) runTest(#F, F)
+
 int main(int argc, char* argv[]) {
-    testFastAtan2();
-    testTransform();
+    RUN_TEST(testBlerp);
+    RUN_TEST(testFastAtan2);
+    RUN_TEST(testTransform);
     return 0;
 }
