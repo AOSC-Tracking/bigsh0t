@@ -3,6 +3,7 @@
 #include <vector>
 #include <cmath>
 #include <chrono>
+#include <algorithm>
 #include <emmintrin.h>
 #include <mmintrin.h>
 #include <intrin.h>
@@ -193,7 +194,59 @@ void testBlerp() {
     free(frame);
 }
 
+
+void testFastAtan2() {
+    double maxTolerableErr = 2.28e-07;
+    double pixelError = (2 * M_PI / maxTolerableErr) / 128;
+    std::cout << maxTolerableErr << " = " << pixelError << std::endl;
+    double maxErr = 0.0;
+    for (int iter = 0; iter < 300000; ++iter) {
+        int x = std::rand() % 100000 + 1;
+        int y = std::rand() % 100000 + 1;
+        if (iter < 100000) {
+            x = iter;
+            y = 100000;
+        } else if (iter <= 200000) {
+            x = 100000;
+            y = iter - 100000;
+        }
+        double fa = fastAtan2(y, x);
+        double ref = atan2(y, x);
+
+        double error = abs(fa - ref);
+        if (error > maxErr) {
+            maxErr = error;
+        }
+    }
+    std::cout << maxErr << (maxErr <= maxTolerableErr ? " OK" : " FAIL") << std::endl;
+}
+
+void testTransform() {
+    int width = 4096;
+    int height = 2048;
+    size_t frameSize = width * height;
+    uint32_t* frame = (uint32_t*) malloc(frameSize * sizeof(uint32_t));
+    for (int i = 0; i < frameSize; ++i) {
+        frame[i] = std::rand() & 0xffffffff;
+    }
+
+    std::cout << "Benchmarking refrence... "; // original was 7190ms, now 3743
+    auto startRef = std::chrono::steady_clock::now();
+
+    Transform360Support t360(width, height);
+    for (int iter = 0; iter < 10; ++iter) {
+        transform_360(t360, frame, frame, width, height, 0, height, 1.0, 1.0, 1.0, Interpolation::NONE);
+    }
+
+    auto endRef = std::chrono::steady_clock::now();
+
+    std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(endRef - startRef).count() << "ms" << std::endl;
+
+    free(frame);
+}
+
 int main(int argc, char* argv[]) {
-    testBlerp();
+    testFastAtan2();
+    testTransform();
     return 0;
 }

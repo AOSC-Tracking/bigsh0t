@@ -130,4 +130,14 @@ void mulQQ(const Quaternion& q1, const Quaternion& q2, Quaternion& out);
 void invertQ(const Quaternion& v, Quaternion& out);
 void decomposeQ(const Quaternion& q, const Vector3& v, Quaternion& swing, Quaternion& twist);
 
+inline void mulM3V3inline(const Matrix3& m, const Vector3& v, Vector3& out) {
+    double v0 = v[0];
+    double v1 = v[1];
+    double v2 = v[2];
+    out[0] = m[0] * v0 + m[1] * v1 + m[2] * v2;
+    out[1] = m[3] * v0 + m[4] * v1 + m[5] * v2;
+    out[2] = m[6] * v0 + m[7] * v1 + m[8] * v2;
+}
+
+
 #endif

@@ -39,8 +39,9 @@ class ZenithCorrection : public Frei0rFilter, MPFilter {
     std::vector<double> yawCorrection;
     std::string zenithDataFrom;
     double frameRate;
+    Transform360Support t360;
 
-    ZenithCorrection(unsigned int width, unsigned int height) : Frei0rFilter(width, height) {
+    ZenithCorrection(unsigned int width, unsigned int height) : Frei0rFilter(width, height), t360(width, height) {
         enableSmoothYaw = false;
         timeBiasYaw = 0.0;
         smoothYaw = 120;
@@ -193,7 +194,7 @@ class ZenithCorrection : public Frei0rFilter, MPFilter {
             rotateQuaternion(xform, q);
         }
 
-        transform_360(out, (uint32_t*) in, width, height, start, num, xform, interpolation);
+        transform_360(t360, out, (uint32_t*) in, width, height, start, num, xform, interpolation);
     }
 };
 

@@ -14,10 +14,6 @@
 #include "Matrix.hpp"
 #include "Math.hpp"
 
-uint32_t sampleNearestNeighbor (const uint32_t* frame, double x, double y, int width, int height) {
-    return frame[((int) y) * width + ((int) x)];
-}
-
 #define EXPAND_ABGR64(v) ( (v & 0xff000000) << 24 ) | ( (v & 0x00ff0000) << 16 ) | ( (v & 0x0000ff00) << 8 ) | ( (v & 0x000000ff) )
 #define COMPRESS_ABGR64(v) ( (v >> 24) & 0xff000000 ) | ( (v >> 16) & 0x00ff0000) | ( (v >> 8) & 0x0000ff00 ) | ( v & 0x000000ff )
 
@@ -222,37 +218,38 @@ void apply_360_map(uint32_t* out, uint32_t* ibuf1, float* map, int width, int he
     }
 }
 
+
 template<int interpolation>
-void transform_360_tmpl(uint32_t* out, uint32_t* ibuf1, int width, int height, int start_scanline, int num_scanlines, const Matrix3& xform) {
+void transform_360_tmpl(const Transform360Support& t360, uint32_t* out, uint32_t* ibuf1, int width, int height, int start_scanline, int num_scanlines, const Matrix3& xform) {
 
     int w = width;
     int h = height;
+    int w2 = w >> 1;
+    int h2 = h >> 1;
+    double w2__M_PI_R = w2 * M_PI_R;
+    double h2__2__M_PI_R = h2 * 2 * M_PI_R;
 
-    int xi, yi;
-    double xt, yt;
 
     Vector3 ray;
     Vector3 ray2;
 
-    for (yi = start_scanline; yi < start_scanline + num_scanlines; yi++) {
+    for (int yi = start_scanline; yi < start_scanline + num_scanlines; yi++) {
         double phi = M_PI * ((double) yi - h / 2) / h;
         double sin_phi = sin(phi);
         double cos_phi = cos(phi);
-        for (xi = 0; xi < w; xi++) {
-            double theta = 2 * M_PI * ((double) xi - w / 2) / w;
-
-            ray[0] = cos(theta) * cos_phi;
-            ray[1] = sin(theta) * cos_phi;
+        for (int xi = 0; xi < w; xi++) {
+            ray[0] = t360.cos_theta[xi] * cos_phi;
+            ray[1] = t360.sin_theta[xi] * cos_phi;
             ray[2] = sin_phi;
 
-            mulM3V3(xform, ray, ray2);
+            mulM3V3inline(xform, ray, ray2);
 
-            double theta_out = atan2 (ray2[1], ray2[0]);
+            double theta_out = fastAtan2 (ray2[1], ray2[0]);
             double dxy = sqrt(ray2[0] * ray2[0] + ray2[1] * ray2[1]);
-            double phi_out = atan2 (ray2[2], dxy);
+            double phi_out = fastAtan2 (ray2[2], dxy);
 
-            xt = w / 2 + (w / 2) * theta_out / M_PI;
-            yt = h / 2 + (h / 2) * phi_out / (M_PI / 2);
+            double xt = w2 + w2__M_PI_R * theta_out;
+            double yt = h2 + h2__2__M_PI_R * phi_out;
 
             if (xt < 0) {
                 xt += w;
@@ -278,12 +275,12 @@ void transform_360_tmpl(uint32_t* out, uint32_t* ibuf1, int width, int height, i
                 pixel = sampleBilinearWrappedClamped(ibuf1, xt, yt, width, height);
                 break;
             }
-            out[((int) yi) * width + ((int) xi)] = pixel;
+            out[yi * width + xi] = pixel;
         }
     }
 }
 
-void transform_360(uint32_t* out, uint32_t* ibuf1, int width, int height, int start_scanline, int num_scanlines, double yaw, double pitch, double roll, int interpolation) {
+void transform_360(const Transform360Support& t360, uint32_t* out, uint32_t* ibuf1, int width, int height, int start_scanline, int num_scanlines, double yaw, double pitch, double roll, int interpolation) {
     double yawR = DEG2RADF(yaw);
     double pitchR = DEG2RADF(pitch);
     double rollR = DEG2RADF(roll);
@@ -297,29 +294,33 @@ void transform_360(uint32_t* out, uint32_t* ibuf1, int width, int height, int st
 
     switch(interpolation) {
     case Interpolation::NONE:
-        transform_360_tmpl<Interpolation::NONE>(out, ibuf1, width, height, start_scanline, num_scanlines, xform);
+        transform_360_tmpl<Interpolation::NONE>(t360, out, ibuf1, width, height, start_scanline, num_scanlines, xform);
         break;
     case Interpolation::BILINEAR:
-        transform_360_tmpl<Interpolation::BILINEAR>(out, ibuf1, width, height, start_scanline, num_scanlines, xform);
+        transform_360_tmpl<Interpolation::BILINEAR>(t360, out, ibuf1, width, height, start_scanline, num_scanlines, xform);
         break;
     }
 }
 
-void transform_360(uint32_t* out, uint32_t* ibuf1, int width, int height, int start_scanline, int num_scanlines, const Matrix3& xform, int interpolation) {
+void transform_360(const Transform360Support& t360, uint32_t* out, uint32_t* ibuf1, int width, int height, int start_scanline, int num_scanlines, const Matrix3& xform, int interpolation) {
     switch(interpolation) {
     case Interpolation::NONE:
-        transform_360_tmpl<Interpolation::NONE>(out, ibuf1, width, height, start_scanline, num_scanlines, xform);
+        transform_360_tmpl<Interpolation::NONE>(t360, out, ibuf1, width, height, start_scanline, num_scanlines, xform);
         break;
     case Interpolation::BILINEAR:
-        transform_360_tmpl<Interpolation::BILINEAR>(out, ibuf1, width, height, start_scanline, num_scanlines, xform);
+        transform_360_tmpl<Interpolation::BILINEAR>(t360, out, ibuf1, width, height, start_scanline, num_scanlines, xform);
         break;
     }
 }
 
-void transform_360_map(float* out, int width, int height, int start_scanline, int num_scanlines, double yaw, double pitch, double roll) {
+void transform_360_map(const Transform360Support& t360, float* out, int width, int height, int start_scanline, int num_scanlines, double yaw, double pitch, double roll) {
 
     int w = width;
     int h = height;
+    int w2 = w >> 1;
+    int h2 = h >> 1;
+    double w2__M_PI_R = w2 * M_PI_R;
+    double h2__2__M_PI_R = h2 * 2 * M_PI_R;
 
     double yawR = DEG2RADF(yaw);
     double pitchR = DEG2RADF(pitch);
@@ -331,32 +332,27 @@ void transform_360_map(float* out, int width, int height, int start_scanline, in
     rotateX(xform, rollR);
     rotateY(xform, pitchR);
     rotateZ(xform, yawR);
-
-    int xi, yi;
-    double xt, yt;
 
     Vector3 ray;
     Vector3 ray2;
 
-    for (yi = start_scanline; yi < start_scanline + num_scanlines; yi++) {
+    for (int yi = start_scanline; yi < start_scanline + num_scanlines; yi++) {
         double phi = M_PI * ((double) yi - h / 2) / h;
         double sin_phi = sin(phi);
         double cos_phi = cos(phi);
-        for (xi = 0; xi < w; xi++) {
-            double theta = 2 * M_PI * ((double) xi - w / 2) / w;
-
-            ray[0] = cos(theta) * cos_phi;
-            ray[1] = sin(theta) * cos_phi;
+        for (int xi = 0; xi < w; xi++) {
+            ray[0] = t360.cos_theta[xi] * cos_phi;
+            ray[1] = t360.sin_theta[xi] * cos_phi;
             ray[2] = sin_phi;
 
-            mulM3V3(xform, ray, ray2);
+            mulM3V3inline(xform, ray, ray2);
 
-            double theta_out = atan2 (ray2[1], ray2[0]);
+            double theta_out = fastAtan2 (ray2[1], ray2[0]);
             double dxy = sqrt(ray2[0] * ray2[0] + ray2[1] * ray2[1]);
-            double phi_out = atan2 (ray2[2], dxy);
+            double phi_out = fastAtan2 (ray2[2], dxy);
 
-            xt = w / 2 + (w / 2) * theta_out / M_PI;
-            yt = h / 2 + (h / 2) * phi_out / (M_PI / 2);
+            double xt = w2 + w2__M_PI_R * theta_out;
+            double yt = h2 + h2__2__M_PI_R * phi_out;
 
             if (xt < 0) {
                 xt += w;
@@ -377,4 +373,19 @@ void transform_360_map(float* out, int width, int height, int start_scanline, in
             out[idx + 1] = (float) yt;
         }
     }
+}
+
+Transform360Support::Transform360Support(int width, int height) {
+    cos_theta = new double[width];
+    sin_theta = new double[width];
+    for (int xi = 0; xi < width; ++xi) {
+        double theta = 2 * M_PI * ((double) xi - width / 2) / width;
+        cos_theta[xi] = cos(theta);
+        sin_theta[xi] = sin(theta);
+    }
+}
+
+Transform360Support::~Transform360Support() {
+    delete[] cos_theta;
+    delete[] sin_theta;
 }

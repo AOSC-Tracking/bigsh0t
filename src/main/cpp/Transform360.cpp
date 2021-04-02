@@ -29,8 +29,9 @@ class Transform360 : public Frei0rFilter, MPFilter {
     int mapHits;
 
     std::mutex lock;
+    Transform360Support t360;
 
-    Transform360(unsigned int width, unsigned int height) : Frei0rFilter(width, height) {
+    Transform360(unsigned int width, unsigned int height) : Frei0rFilter(width, height), t360(width, height) {
         yaw = 0.0;
         pitch = 0.0;
         roll = 0.0;
@@ -107,11 +108,11 @@ class Transform360 : public Frei0rFilter, MPFilter {
                              const uint32_t* in, int start, int num) {
         if (mapHits > 16) {
             if (updateMap) {
-                transform_360_map(map, width, height, start, num, yaw, pitch, roll);
+                transform_360_map(t360, map, width, height, start, num, yaw, pitch, roll);
             }
             apply_360_map (out, (uint32_t*) in, map, width, height, start, num, interpolation);
         } else {
-            transform_360(out, (uint32_t*) in, width, height, start, num, yaw, pitch, roll, interpolation);
+            transform_360(t360, out, (uint32_t*) in, width, height, start, num, yaw, pitch, roll, interpolation);
         }
     }
 };

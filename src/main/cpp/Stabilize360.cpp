@@ -674,6 +674,7 @@ class Stabilize360 : public Frei0rFilter, MPFilter {
     RotationSamples corrections;
 
     std::mutex lock;
+    Transform360Support t360;
 
   public:
     Frei0rParameter<int,double> interpolation;
@@ -705,7 +706,7 @@ class Stabilize360 : public Frei0rFilter, MPFilter {
     double previousFrameTime;
 
 
-    Stabilize360(unsigned int width, unsigned int height) : Frei0rFilter(width, height) {
+    Stabilize360(unsigned int width, unsigned int height) : Frei0rFilter(width, height), t360(width, height) {
         initializedAnalyzeState = false;
         previousAnalyzeState = false;
 
@@ -1017,7 +1018,7 @@ class Stabilize360 : public Frei0rFilter, MPFilter {
     virtual void updateLines(double time,
                              uint32_t* out,
                              const uint32_t* in, int start, int num) {
-        transform_360(out, (uint32_t*) in, width, height, start, num, yaw, pitch, roll, interpolation);
+        transform_360(t360, out, (uint32_t*) in, width, height, start, num, yaw, pitch, roll, interpolation);
     }
 };
 
