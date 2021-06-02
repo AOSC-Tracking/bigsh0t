@@ -84,6 +84,7 @@ add_custom_target(create_tar ALL
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_NAME:bigsh0t_eq_to_rect> ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}/lib/frei0r-1
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_NAME:bigsh0t_stabilize_360> ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}/lib/frei0r-1
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_NAME:bigsh0t_zenith_correction> ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}/lib/frei0r-1
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_NAME:bigsh0t_eq_to_stereo> ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}/lib/frei0r-1
 
     COMMAND ${CMAKE_COMMAND} -E tar "cfvz" "${PACKAGE_NAME}.tar.gz" ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}
     COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${PACKAGE_NAME}.zip" --format=zip ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}
@@ -96,4 +97,5 @@ build_plugin(bigsh0t_rect_to_eq RectToEq.cpp)
 build_plugin(bigsh0t_eq_to_rect EqToRect.cpp)
 build_plugin(bigsh0t_stabilize_360 Stabilize360.cpp)
 build_plugin(bigsh0t_zenith_correction ZenithCorrection.cpp)
+build_plugin(bigsh0t_eq_to_stereo EqToStereo.cpp)
 build_test()
