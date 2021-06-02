@@ -1,6 +1,6 @@
 @SETLOCAL
 @ECHO OFF
-SET VERSION=2.4
+SET VERSION=2.5
 SET SHOTCUT_HOME="C:\Program Files\Shotcut"
 SET PACKAGE_NAME=bigsh0t-%VERSION%-win
 xcopy /Y /S Release\%PACKAGE_NAME%\shotcut\share\shotcut\qml\filters %SHOTCUT_HOME%\share\shotcut\qml\filters
