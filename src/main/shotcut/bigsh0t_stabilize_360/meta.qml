@@ -4,7 +4,7 @@ import org.shotcut.qml 1.0
 
 Metadata {
     type: Metadata.Filter
-    name: qsTr("Stabilize 360")
+    name: qsTr("360: Stabilize")
     mlt_service: "frei0r.bigsh0t_stabilize_360"
     objectName: "bigsh0t_stabilize_360"
     qml: "ui.qml"

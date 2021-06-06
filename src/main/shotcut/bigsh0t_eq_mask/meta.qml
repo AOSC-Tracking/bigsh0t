@@ -4,7 +4,7 @@ import org.shotcut.qml 1.0
 
 Metadata {
     type: Metadata.Filter
-    name: qsTr("Equirectangular Mask")
+    name: qsTr("360: Equirectangular Mask")
     mlt_service: "frei0r.bigsh0t_eq_mask"
     objectName: "bigsh0t_eq_mask"
     qml: "ui.qml"

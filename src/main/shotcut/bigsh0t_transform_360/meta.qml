@@ -4,10 +4,11 @@ import org.shotcut.qml 1.0
 
 Metadata {
     type: Metadata.Filter
-    name: qsTr("Transform 360")
+    name: qsTr("360: Transform")
     mlt_service: "frei0r.bigsh0t_transform_360"
     objectName: "bigsh0t_transform_360"
     qml: "ui.qml"
+    vui: "vui.qml"
     keyframes {
         allowAnimateIn: true
         allowAnimateOut: true

@@ -4,10 +4,11 @@ import org.shotcut.qml 1.0
 
 Metadata {
     type: Metadata.Filter
-    name: qsTr("Equirectangular to Stereographic")
+    name: qsTr("360: Equirectangular to Stereographic")
     mlt_service: "frei0r.bigsh0t_eq_to_stereo"
     objectName: "bigsh0t_eq_to_stereo"
     qml: "ui.qml"
+    vui: "vui.qml"
     keyframes {
         allowAnimateIn: true
         allowAnimateOut: true
@@ -18,32 +19,32 @@ Metadata {
                 property: 'yaw'
                 isSimple: true
                 isCurve: true
-                minimum: -360
-                maximum: 360
+                minimum: -720
+                maximum: 720
             },
             Parameter {
                 name: qsTr('Pitch')
                 property: 'pitch'
                 isSimple: true
                 isCurve: true
-                minimum: -180
-                maximum: 180
+                minimum: -720
+                maximum: 720
             },
             Parameter {
                 name: qsTr('Roll')
                 property: 'roll'
                 isSimple: true
                 isCurve: true
-                minimum: -180
-                maximum: 180
+                minimum: -720
+                maximum: 720
             },
             Parameter {
                 name: qsTr('FOV')
                 property: 'fov'
                 isSimple: true
                 isCurve: true
-                minimum: 0
-                maximum: 180
+                minimum: 1
+                maximum: 179
             },
 			Parameter {
                 name: qsTr('Amount')

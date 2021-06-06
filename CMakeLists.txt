@@ -6,6 +6,7 @@ set (CPP_TEST_SOURCE src/test/cpp)
 set (COMMON_FILES ${CPP_SOURCE}/Matrix.cpp ${CPP_SOURCE}/MPFilter.cpp ${CPP_SOURCE}/MPSource.cpp ${CPP_SOURCE}/Graphics.cpp ${CPP_SOURCE}/ImageProcessing.cpp ${CPP_SOURCE}/Math.cpp ${CPP_SOURCE}/MP4.cpp)
 set (FREI0R_HOME src/frei0r)
 set (PREPROCESSOR_COMMAND cat)
+set (QML_POSTPROCESSOR_COMMAND python ${PROJECT_SOURCE_DIR}/format_qml.py)
 set (DIST_NAME bigsh0t)
 set (DIST_VERSION 2.5)
 set (DIST_PLATFORM unknown)
@@ -40,10 +41,21 @@ macro (preprocess_shotcut_front_end plugin)
         TARGET ${plugin}_fe
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/shotcut/${plugin}
         COMMAND ${PREPROCESSOR_COMMAND} ${PROJECT_SOURCE_DIR}/src/main/shotcut/${plugin}/ui.qml > ${CMAKE_CURRENT_BINARY_DIR}/shotcut/${plugin}/ui.qml
+        COMMAND ${QML_POSTPROCESSOR_COMMAND} ${CMAKE_CURRENT_BINARY_DIR}/shotcut/${plugin}/ui.qml
         COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/src/main/shotcut/${plugin}/meta.qml ${CMAKE_CURRENT_BINARY_DIR}/shotcut/${plugin}/meta.qml
         COMMENT "Preprocessing UI for ${plugin}"
         VERBATIM
     )
+    if(EXISTS ${PROJECT_SOURCE_DIR}/src/main/shotcut/${plugin}/vui.qml)
+        add_custom_command(
+            TARGET ${plugin}_fe
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/shotcut/${plugin}
+            COMMAND ${PREPROCESSOR_COMMAND} ${PROJECT_SOURCE_DIR}/src/main/shotcut/${plugin}/vui.qml > ${CMAKE_CURRENT_BINARY_DIR}/shotcut/${plugin}/vui.qml
+            COMMAND ${QML_POSTPROCESSOR_COMMAND} ${CMAKE_CURRENT_BINARY_DIR}/shotcut/${plugin}/vui.qml
+            COMMENT "Preprocessing ViewUI for ${plugin}"
+            VERBATIM
+        )
+    endif()
 endmacro(preprocess_shotcut_front_end)
 
 macro (build_plugin plugin main_source)

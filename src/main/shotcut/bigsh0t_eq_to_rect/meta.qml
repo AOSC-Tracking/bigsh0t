@@ -4,10 +4,11 @@ import org.shotcut.qml 1.0
 
 Metadata {
     type: Metadata.Filter
-    name: qsTr("Equirectangular to Rectilinear")
+    name: qsTr("360: Equirectangular to Rectilinear")
     mlt_service: "frei0r.bigsh0t_eq_to_rect"
     objectName: "bigsh0t_eq_to_rect"
     qml: "ui.qml"
+    vui: "vui.qml"
     keyframes {
         allowAnimateIn: true
         allowAnimateOut: true
