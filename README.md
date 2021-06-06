@@ -206,3 +206,16 @@ Stabilizes 360 footage using the orientation sensor data in the video file. Curr
  * **Yaw: Smoothing**: The number of frames to use to smooth the yaw movement. The higher the value, the slower the camera will follow any intended motion.
 
  * **Yaw: Time Bias**: Shift the frames used to smooth out the shakes relative to the stabilized frame. A value less than zero will give more weight to past frames, and the camera will seem to lag behind intended movement. A value greater than zero will give more weight to future frames, and the camera will appear to move ahead of the intended camera movement. A value of zero should make the camera follow the intended path.
+
+
+### Equirectangular to Stereographic
+
+Converts an equirectangular frame (panoramic) to a stereographic frame. This can be used to make "little planet" videos.
+
+#### Parameters
+
+ * **interpolation**: Nearest-neighbor or bilinear. Determines the sampling method.
+ * **fov**: The field of view, in degrees.
+ * **yaw**, **pitch** and **roll**: The direction of the image center in the panorama.
+ * **amount**: The amount of stereographic projection to mix in. 100 means that you get a 100% stereographic projection, 0 means a standard rectilinear projection.
+
