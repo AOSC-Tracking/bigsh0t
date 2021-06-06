@@ -50,6 +50,9 @@ void smooth (std::vector<double>& samples, int window, double windowBias) {
 double fastAtan2(double y, double x) {
     double abs_x = abs(x);
     double abs_y = abs(y);
+    if (abs_x < DBL_MIN && abs_y < DBL_MIN) {
+        return 0.0;
+    }
     double a = std::min(abs_x, abs_y) / std::max(abs_x, abs_y);
 
     double a2 = a * a;
