@@ -4,9 +4,7 @@
 #include <cmath>
 #include <chrono>
 #include <algorithm>
-#include <emmintrin.h>
-#include <mmintrin.h>
-#include <intrin.h>
+#include "../../main/cpp/sse_compat.hpp"
 #include <iomanip>
 #include "../../main/cpp/Math.hpp"
 #include "../../main/cpp/Matrix.hpp"
@@ -43,7 +41,7 @@ void assertTrue(bool condition) {
 }
 
 
-bool assertComponentDifferenceLessThan(uint32_t a, uint32_t b, int diffmax, char* msg) {
+bool assertComponentDifferenceLessThan(uint32_t a, uint32_t b, int diffmax, const char* msg) {
     int c0a = (a >> 24) & 0xff;
     int c1a = (a >> 16) & 0xff;
     int c2a = (a >>  8) & 0xff;
@@ -222,7 +220,6 @@ void benchmarkBlerp() {
 void testFastAtan2() {
     double maxTolerableErr = 2.28e-07;
     double pixelError = (2 * M_PI / maxTolerableErr) / 128;
-    //std::cout << maxTolerableErr << " = " << pixelError << std::endl;
     double maxErr = 0.0;
     for (int iter = 0; iter < 300000; ++iter) {
         int x = std::rand() % 100000 + 1;
@@ -242,9 +239,34 @@ void testFastAtan2() {
             maxErr = error;
         }
     }
-    //std::cout << maxErr << (maxErr <= maxTolerableErr ? " OK" : " FAIL") << std::endl;
     assertTrue(maxErr <= maxTolerableErr);
 }
+
+void testFastAtan2Double() {
+    double maxTolerableErr = 2.28e-07;
+    double pixelError = (2 * M_PI / maxTolerableErr) / 128;
+    double maxErr = 0.0;
+    for (int iter = 0; iter < 300000; ++iter) {
+        double x = (std::rand() % 100000 + 1) / 100000.0;
+        double y = (std::rand() % 100000 + 1) / 100000.0;
+        if (iter < 100000) {
+            x = iter;
+            y = 100000;
+        } else if (iter <= 200000) {
+            x = 100000;
+            y = iter - 100000;
+        }
+        double fa = fastAtan2(y, x);
+        double ref = atan2(y, x);
+
+        double error = abs(fa - ref);
+        if (error > maxErr) {
+            maxErr = error;
+        }
+    }
+    assertTrue(maxErr <= maxTolerableErr);
+}
+
 
 void testTransform() {
     int width = 4096;
@@ -288,6 +310,7 @@ void runTest(const char* name, TestCase testCase) {
 int main(int argc, char* argv[]) {
     RUN_TEST(testBlerp);
     RUN_TEST(testFastAtan2);
-    RUN_TEST(testTransform);
+    RUN_TEST(testFastAtan2Double);
+    //RUN_TEST(testTransform);
     return 0;
 }
