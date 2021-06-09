@@ -29,7 +29,8 @@ endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     string(TOLOWER ${CMAKE_SYSTEM_NAME} DIST_PLATFORM)
-    add_compile_options(-std=c++11 -fopenmp)
+    add_compile_options(-std=c++11 -fopenmp -march=native)
+    add_compile_definitions(USE_SSE)
     set (PREPROCESSOR_COMMAND gcc -E -P -I${PROJECT_SOURCE_DIR}/src/main/shotcut/bigsh0t_transform_360/ - <)
 endif()
 

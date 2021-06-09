@@ -4,12 +4,8 @@
 #include <cmath>
 #include <algorithm>
 #include <iomanip>
-#ifdef USE_SSE
-#include <emmintrin.h>
-#include <mmintrin.h>
-#include <intrin.h>
-#endif
 
+#include "sse_compat.hpp"
 #include "ImageProcessing.hpp"
 #include "Matrix.hpp"
 #include "Math.hpp"

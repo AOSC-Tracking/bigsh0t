@@ -2,6 +2,7 @@
 #include <climits>
 #include <cmath>
 #include <algorithm>
+#include <cfloat>
 
 #include "Math.hpp"
 
@@ -48,8 +49,8 @@ void smooth (std::vector<double>& samples, int window, double windowBias) {
  * resolution of the bilinear interpolation code.
  */
 double fastAtan2(double y, double x) {
-    double abs_x = abs(x);
-    double abs_y = abs(y);
+    double abs_x = std::abs(x);
+    double abs_y = std::abs(y);
     if (abs_x < DBL_MIN && abs_y < DBL_MIN) {
         return 0.0;
     }
