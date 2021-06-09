@@ -143,34 +143,6 @@
     }$\
 
 
-#define PROPERTY_VARIABLES(PROPERTY)
-
-#define PROPERTY_VARIABLES_STATIC(PROPERTY)
-
-#define PROPERTY_VARIABLES_COMBOBOX(PROPERTY)
-
-#define PROPERTY_VARIABLES_CHECKBOX(PROPERTY)
-
-#define PROPERTY_VARIABLES_LABEL(PROPERTY)
-
-#define PROPERTY_VARIABLES_TEXTFIELD(PROPERTY)
-
-#define PROPERTY_VARIABLES_TEXTFIELD_NUM(PROPERTY)
-
-#define PROPERTY_CONNECTIONS(PROPERTY)
-
-#define PROPERTY_CONNECTIONS_STATIC(PROPERTY)
-
-#define PROPERTY_CONNECTIONS_COMBOBOX(PROPERTY)
-
-#define PROPERTY_CONNECTIONS_CHECKBOX(PROPERTY)
-
-#define PROPERTY_CONNECTIONS_LABEL(PROPERTY)
-
-#define PROPERTY_CONNECTIONS_TEXTFIELD(PROPERTY)
-
-#define PROPERTY_CONNECTIONS_TEXTFIELD_NUM(PROPERTY)
-
 #define UPDATE_PROPERTY(PROPERTY) function updateProperty_ ## PROPERTY () {$\
         if (!blockUpdate) {$\
             updateFilter(#PROPERTY, PROPERTY ## Slider.value, PROPERTY ## KeyframesButton, getPosition());$\
@@ -249,22 +221,6 @@
 #define ON_COMPLETED(PROPERTY,DEFAULT_VALUE) if (filter.isNew) {$\
     filter.set(#PROPERTY, DEFAULT_VALUE); $\
 }
-
-#define LOAD_PRESET(PROPERTY) PROPERTY ## Middle = filter.getDouble(#PROPERTY, filter.animateIn); $\
-if (filter.animateIn > 0) { $\
-    PROPERTY ## Start = filter.getDouble(#PROPERTY, 0); $\
-} $\
-if (filter.animateOut > 0) { $\
-    PROPERTY ## End = filter.getDouble(#PROPERTY, filter.duration - 1); $\
-}
-
-#define LOAD_PRESET_STATIC(PROPERTY) PROPERTY ## Value = filter.getDouble(#PROPERTY);
-
-#define LOAD_PRESET_COMBOBOX(PROPERTY) PROPERTY ## Value = filter.get(#PROPERTY);
-
-#define LOAD_PRESET_TEXTFIELD(PROPERTY) PROPERTY ## Value = filter.get(#PROPERTY);
-
-#define LOAD_PRESET_TEXTFIELD_NUM(PROPERTY) PROPERTY ## Value = filter.get(#PROPERTY);
 
 #define SET_CONTROLS(PROPERTY) setSimpleControl(#PROPERTY, PROPERTY ## Slider, PROPERTY ## KeyframesButton);
 
