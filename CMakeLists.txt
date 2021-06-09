@@ -8,7 +8,7 @@ set (FREI0R_HOME src/frei0r)
 set (PREPROCESSOR_COMMAND cat)
 set (QML_POSTPROCESSOR_COMMAND python ${PROJECT_SOURCE_DIR}/format_qml.py)
 set (DIST_NAME bigsh0t)
-set (DIST_VERSION 2.5)
+set (DIST_VERSION 2.6)
 set (DIST_PLATFORM unknown)
 
 if(APPLE)
