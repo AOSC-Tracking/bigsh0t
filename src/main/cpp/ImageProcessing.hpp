@@ -17,6 +17,8 @@ class Transform360Support {
 
     double* cos_theta;
     double* sin_theta;
+    double* cos_phi;
+    double* sin_phi;
 };
 
 inline uint32_t sampleNearestNeighbor (const uint32_t* frame, double x, double y, int width, int height) {
@@ -29,6 +31,8 @@ uint32_t sampleBilinearWrappedClamped (const uint32_t* frame, double x, double y
 uint32_t sseBlerp(const uint32_t* frame, int ai, int bi, int ci, int di, int ax, int ay, int width, int height);
 #endif
 uint32_t int64Blerp(const uint32_t* frame, int ai, int bi, int ci, int di, int ax, int ay, int width, int height);
+
+uint32_t int64lerp(const uint32_t a, const uint32_t b, const int x);
 
 void transform_360(const Transform360Support& t360, uint32_t* out, uint32_t* ibuf1, int width, int height, int start_scanline, int num_scanlines, double yaw, double pitch, double roll, int interpolation);
 void transform_360(const Transform360Support& t360, uint32_t* out, uint32_t* ibuf1, int width, int height, int start_scanline, int num_scanlines, const Matrix3& xform, int interpolation);

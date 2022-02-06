@@ -10,6 +10,7 @@
 #include "../../main/cpp/Matrix.hpp"
 #include "../../main/cpp/MP4.hpp"
 #include "../../main/cpp/ImageProcessing.hpp"
+#include "../../main/cpp/SummedAreaTable.hpp"
 
 void testMP4() {
     MP4Parser parser(std::string("c:\\temp\\test.mp4"));
@@ -292,6 +293,41 @@ void testTransform() {
     free(frame);
 }
 
+void testSummedAreaTable() {
+    uint32_t zeros[] = {
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0
+    };
+    uint32_t in[] = {
+        0, 1, 2, 3, 4,
+        5, 6, 7, 8, 9,
+        10, 11, 12, 13, 14,
+        15, 16, 17, 18, 19
+    };
+    SummedAreaTable sat(5,4);
+    sat.compute(zeros, 5, 0, 0, 5, 4);
+    sat.dump();
+    assertEquals(sat.sum(0, 0, 1, 1), (uint32_t) 0);
+
+    sat.compute(in, 5, 0, 0, 5, 4);
+    sat.dump();
+    assertEquals(sat.sum(0, 0, 1, 1), (uint32_t) 0);
+    assertEquals(sat.sum(0, 0, 2, 2), (uint32_t) (0 + 1 + 5 + 6));
+    assertEquals(sat.sum(1, 1, 2, 2), (uint32_t) (6 + 7 + 11 + 12));
+    assertEquals(sat.sum(0, 0, 5, 4), (uint32_t) 190);
+    assertEquals(sat.sum(1, 1, 3, 2), (uint32_t) (6 + 7 + 8 + 11 + 12 + 13));
+
+    assertEquals(sat.sum(3, 1, 4, 2), (uint32_t) (8 + 9 + 5 + 6 + 13 + 14 + 10 + 11));
+
+    sat.compute(in, 5, 1, 1, 3, 2);
+    assertEquals(sat.sum(0, 0, 2, 2), (uint32_t) (6 + 7 + 11 + 12));
+    assertEquals(sat.sum(1, 0, 2, 2), (uint32_t) (7 + 8 + 12 + 13));
+    assertEquals(sat.sum(2, 0, 2, 2), (uint32_t) (8 + 6 + 13 + 11));
+    sat.dump();
+}
+
 typedef void (*TestCase)();
 
 void runTest(const char* name, TestCase testCase) {
@@ -308,9 +344,10 @@ void runTest(const char* name, TestCase testCase) {
 #define RUN_TEST(F) runTest(#F, F)
 
 int main(int argc, char* argv[]) {
-    RUN_TEST(testBlerp);
-    RUN_TEST(testFastAtan2);
-    RUN_TEST(testFastAtan2Double);
+    RUN_TEST(testSummedAreaTable);
+    //RUN_TEST(testBlerp);
+    //RUN_TEST(testFastAtan2);
+    //RUN_TEST(testFastAtan2Double);
     //RUN_TEST(testTransform);
     return 0;
 }

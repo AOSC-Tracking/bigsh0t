@@ -3,7 +3,7 @@ project (bigsh0t)
 
 set (CPP_SOURCE src/main/cpp)
 set (CPP_TEST_SOURCE src/test/cpp)
-set (COMMON_FILES ${CPP_SOURCE}/Matrix.cpp ${CPP_SOURCE}/MPFilter.cpp ${CPP_SOURCE}/MPSource.cpp ${CPP_SOURCE}/Graphics.cpp ${CPP_SOURCE}/ImageProcessing.cpp ${CPP_SOURCE}/Math.cpp ${CPP_SOURCE}/MP4.cpp)
+set (COMMON_FILES ${CPP_SOURCE}/Matrix.cpp ${CPP_SOURCE}/MPFilter.cpp ${CPP_SOURCE}/MPSource.cpp ${CPP_SOURCE}/Graphics.cpp ${CPP_SOURCE}/ImageProcessing.cpp ${CPP_SOURCE}/Math.cpp ${CPP_SOURCE}/MP4.cpp ${CPP_SOURCE}/SummedAreaTable.cpp)
 set (FREI0R_HOME src/frei0r)
 set (PREPROCESSOR_COMMAND cat)
 set (QML_POSTPROCESSOR_COMMAND python ${PROJECT_SOURCE_DIR}/format_qml.py)
@@ -111,6 +111,8 @@ add_custom_target(create_tar ALL
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_NAME:bigsh0t_stabilize_360> ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}/lib/frei0r-1
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_NAME:bigsh0t_zenith_correction> ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}/lib/frei0r-1
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_NAME:bigsh0t_eq_to_stereo> ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}/lib/frei0r-1
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_NAME:bigsh0t_eq_cap> ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}/lib/frei0r-1
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_NAME:bigsh0t_eq_wrap> ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}/lib/frei0r-1
 
     COMMAND ${CMAKE_COMMAND} -E tar "cfvz" "${PACKAGE_NAME}.tar.gz" ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}
     COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${PACKAGE_NAME}.zip" --format=zip ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}
@@ -124,4 +126,6 @@ build_plugin(bigsh0t_eq_to_rect EqToRect.cpp)
 build_plugin(bigsh0t_stabilize_360 Stabilize360.cpp)
 build_plugin(bigsh0t_zenith_correction ZenithCorrection.cpp)
 build_plugin(bigsh0t_eq_to_stereo EqToStereo.cpp)
+build_plugin(bigsh0t_eq_cap EqCap.cpp)
+build_plugin(bigsh0t_eq_wrap EqWrap.cpp)
 build_test()

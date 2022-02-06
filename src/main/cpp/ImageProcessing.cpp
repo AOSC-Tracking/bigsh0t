@@ -117,6 +117,16 @@ uint32_t int64Blerp(const uint32_t* frame, int ai, int bi, int ci, int di, int a
     return _int64Blerp(frame, ai, bi, ci, di, ax, ay, width, height);
 }
 
+uint32_t int64lerp(const uint32_t a, const uint32_t b, const int x) {
+    uint64_t a64 = a;
+    uint64_t b64 = b;
+    uint64_t A = EXPAND_ABGR64(a64);
+    uint64_t B = EXPAND_ABGR64(b64);
+
+    uint64_t C = (A + (((B - A) * x) >> 7) & 0x00ff00ff00ff00ff);
+    return COMPRESS_ABGR64(C);
+}
+
 inline uint32_t blerp(const uint32_t* frame, int ai, int bi, int ci, int di, int ax, int ay, int width, int height) {
 #ifdef USE_SSE
     return _sseBlerp(frame, ai, bi, ci, di, ax, ay, width, height);
@@ -374,14 +384,26 @@ void transform_360_map(const Transform360Support& t360, float* out, int width, i
 Transform360Support::Transform360Support(int width, int height) {
     cos_theta = new double[width];
     sin_theta = new double[width];
+
+    cos_phi = new double[height];
+    sin_phi = new double[height];
+
     for (int xi = 0; xi < width; ++xi) {
         double theta = 2 * M_PI * ((double) xi - width / 2) / width;
         cos_theta[xi] = cos(theta);
         sin_theta[xi] = sin(theta);
+    }
+
+    for (int yi = 0; yi < height; ++yi) {
+        double phi = 2 * M_PI * ((double) yi - height / 2) / height;
+        cos_phi[yi] = cos(phi);
+        sin_phi[yi] = sin(phi);
     }
 }
 
 Transform360Support::~Transform360Support() {
     delete[] cos_theta;
     delete[] sin_theta;
+    delete[] cos_phi;
+    delete[] sin_phi;
 }
