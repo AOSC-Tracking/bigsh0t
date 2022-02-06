@@ -219,3 +219,32 @@ Converts an equirectangular frame (panoramic) to a stereographic frame. This can
  * **yaw**, **pitch** and **roll**: The direction of the image center in the panorama.
  * **amount**: The amount of stereographic projection to mix in. 100 means that you get a 100% stereographic projection, 0 means a standard rectilinear projection.
 
+
+### Cap top and Bottom
+
+Attempts to fill in zenith and nadir by stretching and blurring the image data. It samples a band of latitude near the start of the effect and stretches and blurs it over the pole.
+
+#### Parameters
+
+ * **interpolation**: Nearest-neighbor or bilinear. Determines the sampling method.
+ * **(top / bottom) start**: degrees from the horizon where we start to fill in
+ * **(top / bottom) end**: degrees from the horizon where we reach maximum blur
+ * **(top / bottom) blend in**: degrees towards the horizon to sample from
+ * **(top / bottom) blend out**: degrees away from the horizon to sample to
+ * **(top / bottom) fade in**: degrees to fade the effect in over
+ * **(top / bottom) blur width at start**: horizontal angle to blur over at the start of the fill-in
+ * **(top / bottom) blur width at end**: horizontal angle to blur over at the end of the fill-in
+ * **(top / bottom) blur height at start**: vertical angle to blur over at the start of the fill-in
+ * **(top / bottom) blur height at end**: vertical angle to blur over at the end of the fill-in
+
+
+### Wrap
+
+Stretches a section of the equirectangular panorama to cover the entire VR sphere.
+
+#### Parameters
+
+ * **interpolation**: Nearest-neighbor or bilinear. Determines the sampling method.
+ * **top**, **bottom**, **left**, **right**: degrees from the center of the image to keep unchanged
+ * **blur start**: horizontal fraction of the unchanged area to blur over at the equator
+ * **blur end**: horizontal fraction of the unchanged area to blur over at the poles
