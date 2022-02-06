@@ -111,11 +111,20 @@ class EqWrap : public Frei0rFilter, MPFilter {
         const int height2 = height / 2;
         const int width2 = width / 2;
         for (int y = start; y < start + num; ++y) {
-            int distance = y - height2;
-            if (distance < 0) {
-                distance = -distance;
+            int distance = 0;
+            int dmax = 0;
+            if (y < vfov0px) {
+                distance = vfov0px - y;
+                dmax = vfov0px;
+            } else if (y < vfov1px) {
+                distance = 0;
+                dmax = 1;
+            } else {
+                distance = y - vfov1px;
+                dmax = height - vfov1px;
             }
-            int sampleWidth = blurStartPx + (blurEndPx - blurStartPx) * distance / height2;
+
+            int sampleWidth = blurStartPx + (blurEndPx - blurStartPx) * distance / dmax;
             if (sampleWidth < 1) {
                 sampleWidth = 1;
             }

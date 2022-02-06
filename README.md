@@ -246,5 +246,5 @@ Stretches a section of the equirectangular panorama to cover the entire VR spher
 
  * **interpolation**: Nearest-neighbor or bilinear. Determines the sampling method.
  * **top**, **bottom**, **left**, **right**: degrees from the center of the image to keep unchanged
- * **blur start**: horizontal fraction of the unchanged area to blur over at the equator
+ * **blur start**: horizontal fraction of the unchanged area to blur over in the equator band
  * **blur end**: horizontal fraction of the unchanged area to blur over at the poles
