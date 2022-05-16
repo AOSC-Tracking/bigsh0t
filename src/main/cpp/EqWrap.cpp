@@ -3,6 +3,7 @@
 #include <climits>
 #include <cmath>
 #include <mutex>
+#include <cstring>
 
 #include "frei0r.hpp"
 #include "Matrix.hpp"

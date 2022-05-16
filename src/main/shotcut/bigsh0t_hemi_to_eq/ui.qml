@@ -9,12 +9,17 @@ import Shotcut.Controls 1.0 as Shotcut
 
 Shotcut.KeyframableFilter {
     width: 350
-    height: 525 /* 21 rows of 25 pixels */
+    height: 950 /* 38 rows of 25 pixels */
 
-    keyframableParameters: ["yaw", "pitch", "roll", "frontX", "frontY", "frontUp", "backX", "backY", "backUp", "fov", "radius", "nadirRadius", "nadirCorrectionStart"]
-    startValues: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
-    middleValues: [0.0, 0.0, 0.0, 0.75, 0.5, 90, 0.25, 0.5, 270, 180, 0.25, 0.2229, 0.8]
-    endValues: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
+    keyframableParameters: [
+        "yaw", "pitch", "roll", "frontX", "frontY", "frontUp", "backX", "backY", "backUp", "fov", "radius", "nadirRadius", "nadirCorrectionStart",
+        "distortionA", "distortionB", "distortionC", "distortionRadius",
+        "vignettingA", "vignettingB", "vignettingC", "vignettingD", "vignettingRadius",
+        "emorH1", "emorH2", "emorH3", "emorH4", "emorH5"
+        ]
+    startValues:  [0.5, 0.5, 0.5, 0.5,  0.5,  0.5, 0.5,  0.5,   0.5,   0.5, 0.5,  0.5,    0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
+    middleValues: [0.0, 0.0, 0.0, 0.75, 0.5, 90,   0.25, 0.5, 270,   180,   0.25, 0.2229, 0.8, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    endValues:    [0.5, 0.5, 0.5, 0.5,  0.5,  0.5, 0.5,  0.5,   0.5,   0.5, 0.5,  0.5,    0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
 
     property var allParameters: [
         {
@@ -91,6 +96,81 @@ Shotcut.KeyframableFilter {
             name: "projection",
             type: "combobox",
             def: 0
+        },
+        {
+            name: "distortionA",
+            type: "simple",
+            def: 0.0
+        },
+        {
+            name: "distortionB",
+            type: "simple",
+            def: 0.0
+        },
+        {
+            name: "distortionC",
+            type: "simple",
+            def: 0.0
+        },
+        {
+            name: "distortionRadius",
+            type: "simple",
+            def: 0.0
+        },
+        {
+            name: "vignettingA",
+            type: "simple",
+            def: 0.0
+        },
+        {
+            name: "vignettingB",
+            type: "simple",
+            def: 0.0
+        },
+        {
+            name: "vignettingC",
+            type: "simple",
+            def: 0.0
+        },
+        {
+            name: "vignettingD",
+            type: "simple",
+            def: 0.0
+        },
+        {
+            name: "vignettingRadius",
+            type: "simple",
+            def: 0.0
+        },
+        {
+            name: "emorH1",
+            type: "simple",
+            def: 0.0
+        },
+        {
+            name: "emorH2",
+            type: "simple",
+            def: 0.0
+        },
+        {
+            name: "emorH3",
+            type: "simple",
+            def: 0.0
+        },
+        {
+            name: "emorH4",
+            type: "simple",
+            def: 0.0
+        },
+        {
+            name: "emorH5",
+            type: "simple",
+            def: 0.0
+        },
+        {
+            name: "emorEnabled",
+            type: "checkbox",
+            def: false
         }
     ]
 
@@ -120,6 +200,24 @@ Shotcut.KeyframableFilter {
     UPDATE_PROPERTY_COMBOBOX(interpolation)
     UPDATE_PROPERTY_COMBOBOX(projection)
 
+    UPDATE_PROPERTY(distortionA)
+    UPDATE_PROPERTY(distortionB)
+    UPDATE_PROPERTY(distortionC)
+    UPDATE_PROPERTY(distortionRadius)
+
+    UPDATE_PROPERTY(vignettingA)
+    UPDATE_PROPERTY(vignettingB)
+    UPDATE_PROPERTY(vignettingC)
+    UPDATE_PROPERTY(vignettingD)
+    UPDATE_PROPERTY(vignettingRadius)
+
+    UPDATE_PROPERTY(emorH1)
+    UPDATE_PROPERTY(emorH2)
+    UPDATE_PROPERTY(emorH3)
+    UPDATE_PROPERTY(emorH4)
+    UPDATE_PROPERTY(emorH5)
+    UPDATE_PROPERTY_CHECKBOX(emorEnabled)
+
     GridLayout {
         columns: 4
         anchors.fill: parent
@@ -131,7 +229,10 @@ Shotcut.KeyframableFilter {
         }
         Shotcut.Preset {
             id: preset
-            parameters: ["yaw", "pitch", "roll", "frontX", "frontY", "frontUp", "backX", "backY", "backUp", "fov", "radius", "nadirRadius", "nadirCorrectionStart", "interpolation", "projection"]
+            parameters: ["yaw", "pitch", "roll", "frontX", "frontY", "frontUp", "backX", "backY", "backUp", "fov", "radius", "nadirRadius", "nadirCorrectionStart", "interpolation", "projection",
+                "distortionA", "distortionB", "distortionC", "distortionRadius",
+                "vignettingA", "vignettingB", "vignettingC", "vignettingD", "vignettingRadius",
+                "emorH1", "emorH2", "emorH3", "emorH4", "emorH5", "emorEnabled"]
             Layout.columnSpan: 3
             onBeforePresetLoaded: {
                 defaultBeforePresetLoaded()
@@ -443,7 +544,307 @@ Shotcut.KeyframableFilter {
         KEYFRAME_BUTTON(nadirCorrectionStart)
         Shotcut.UndoButton {
             id: nadirCorrectionStartUndo
-            onClicked: radiusSlider.value = 0.8
+            onClicked: nadirCorrectionStartSlider.value = 0.8
+        }
+
+        /* Lens Distortion */
+        Label {
+            text: qsTr('Lens Distortion')
+            Layout.alignment: Qt.AlignLeft
+            Layout.columnSpan: 4
+        }
+
+        Label {
+            text: qsTr('A')
+            Layout.alignment: Qt.AlignRight
+        }
+        Shotcut.SliderSpinner {
+            id: distortionASlider
+            minimumValue: -2
+            maximumValue: 2
+            suffix: ' '
+            decimals: 4
+            stepSize: 0.0001
+            onValueChanged: updateProperty_distortionA()
+        }
+        KEYFRAME_BUTTON(distortionA)
+        Shotcut.UndoButton {
+            id: distortionAUndo
+            onClicked: distortionASlider.value = 0.0
+        }
+
+        Label {
+            text: qsTr('B')
+            Layout.alignment: Qt.AlignRight
+        }
+        Shotcut.SliderSpinner {
+            id: distortionBSlider
+            minimumValue: -2
+            maximumValue: 2
+            suffix: ' '
+            decimals: 4
+            stepSize: 0.0001
+            onValueChanged: updateProperty_distortionB()
+        }
+        KEYFRAME_BUTTON(distortionB)
+        Shotcut.UndoButton {
+            id: distortionBUndo
+            onClicked: distortionBSlider.value = 0.0
+        }
+
+        Label {
+            text: qsTr('C')
+            Layout.alignment: Qt.AlignRight
+        }
+        Shotcut.SliderSpinner {
+            id: distortionCSlider
+            minimumValue: -2
+            maximumValue: 2
+            suffix: ' '
+            decimals: 4
+            stepSize: 0.0001
+            onValueChanged: updateProperty_distortionC()
+        }
+        KEYFRAME_BUTTON(distortionC)
+        Shotcut.UndoButton {
+            id: distortionCUndo
+            onClicked: distortionCSlider.value = 0.0
+        }
+
+        Label {
+            text: qsTr('Radius')
+            Layout.alignment: Qt.AlignRight
+        }
+        Shotcut.SliderSpinner {
+            id: distortionRadiusSlider
+            minimumValue: 0
+            maximumValue: 1
+            suffix: ' '
+            decimals: 4
+            stepSize: 0.0001
+            onValueChanged: updateProperty_distortionRadius()
+        }
+        KEYFRAME_BUTTON(distortionRadius)
+        Shotcut.UndoButton {
+            id: distortionRadiusUndo
+            onClicked: distortionRadiusSlider.value = 0.0
+        }
+
+        /* Lens Vignetting */
+        Label {
+            text: qsTr('Lens Vignetting')
+            Layout.alignment: Qt.AlignLeft
+            Layout.columnSpan: 4
+        }
+
+        Label {
+            text: qsTr('A')
+            Layout.alignment: Qt.AlignRight
+        }
+        Shotcut.SliderSpinner {
+            id: vignettingASlider
+            minimumValue: -10
+            maximumValue: 10
+            suffix: ' '
+            decimals: 4
+            stepSize: 0.0001
+            onValueChanged: updateProperty_vignettingA()
+        }
+        KEYFRAME_BUTTON(vignettingA)
+        Shotcut.UndoButton {
+            id: vignettingAUndo
+            onClicked: vignettingASlider.value = 0.0
+        }
+
+        Label {
+            text: qsTr('B')
+            Layout.alignment: Qt.AlignRight
+        }
+        Shotcut.SliderSpinner {
+            id: vignettingBSlider
+            minimumValue: -10
+            maximumValue: 10
+            suffix: ' '
+            decimals: 4
+            stepSize: 0.0001
+            onValueChanged: updateProperty_vignettingB()
+        }
+        KEYFRAME_BUTTON(vignettingB)
+        Shotcut.UndoButton {
+            id: vignettingBUndo
+            onClicked: vignettingBSlider.value = 0.0
+        }
+
+        Label {
+            text: qsTr('C')
+            Layout.alignment: Qt.AlignRight
+        }
+        Shotcut.SliderSpinner {
+            id: vignettingCSlider
+            minimumValue: -10
+            maximumValue: 10
+            suffix: ' '
+            decimals: 4
+            stepSize: 0.0001
+            onValueChanged: updateProperty_vignettingC()
+        }
+        KEYFRAME_BUTTON(vignettingC)
+        Shotcut.UndoButton {
+            id: vignettingCUndo
+            onClicked: vignettingCSlider.value = 0.0
+        }
+
+        Label {
+            text: qsTr('D')
+            Layout.alignment: Qt.AlignRight
+        }
+        Shotcut.SliderSpinner {
+            id: vignettingDSlider
+            minimumValue: -10
+            maximumValue: 10
+            suffix: ' '
+            decimals: 4
+            stepSize: 0.0001
+            onValueChanged: updateProperty_vignettingD()
+        }
+        KEYFRAME_BUTTON(vignettingD)
+        Shotcut.UndoButton {
+            id: vignettingDUndo
+            onClicked: vignettingDSlider.value = 0.0
+        }
+
+        Label {
+            text: qsTr('Radius')
+            Layout.alignment: Qt.AlignRight
+        }
+        Shotcut.SliderSpinner {
+            id: vignettingRadiusSlider
+            minimumValue: 0
+            maximumValue: 2
+            suffix: ' '
+            decimals: 4
+            stepSize: 0.0001
+            onValueChanged: updateProperty_vignettingRadius()
+        }
+        KEYFRAME_BUTTON(vignettingRadius)
+        Shotcut.UndoButton {
+            id: vignettingRadiusUndo
+            onClicked: vignettingRadiusSlider.value = 0.0
+        }
+
+        /* Sensor Response */
+        Label {
+            text: qsTr('Sensor Response')
+            Layout.alignment: Qt.AlignLeft
+            Layout.columnSpan: 4
+        }
+
+        Label {
+            text: qsTr('Enabled')
+            Layout.alignment: Qt.AlignLeft
+        }
+        CheckBox {
+            text: qsTr('')
+            checked: false
+            partiallyCheckedEnabled: false
+            id: emorEnabledCheckBox
+            Layout.columnSpan: 3
+            onCheckedChanged: updateProperty_emorEnabled()
+        }
+
+        Label {
+            text: qsTr('EMoR h(1)')
+            Layout.alignment: Qt.AlignRight
+        }
+        Shotcut.SliderSpinner {
+            id: emorH1Slider
+            minimumValue: -10
+            maximumValue: 10
+            suffix: ' '
+            decimals: 4
+            stepSize: 0.0001
+            onValueChanged: updateProperty_emorH1()
+        }
+        KEYFRAME_BUTTON(emorH1)
+        Shotcut.UndoButton {
+            id: emorH1Undo
+            onClicked: emorH1Slider.value = 0.0
+        }
+
+        Label {
+            text: qsTr('EMoR h(2)')
+            Layout.alignment: Qt.AlignRight
+        }
+        Shotcut.SliderSpinner {
+            id: emorH2Slider
+            minimumValue: -10
+            maximumValue: 10
+            suffix: ' '
+            decimals: 4
+            stepSize: 0.0001
+            onValueChanged: updateProperty_emorH2()
+        }
+        KEYFRAME_BUTTON(emorH2)
+        Shotcut.UndoButton {
+            id: emorH2Undo
+            onClicked: emorH2Slider.value = 0.0
+        }
+
+        Label {
+            text: qsTr('EMoR h(3)')
+            Layout.alignment: Qt.AlignRight
+        }
+        Shotcut.SliderSpinner {
+            id: emorH3Slider
+            minimumValue: -10
+            maximumValue: 10
+            suffix: ' '
+            decimals: 4
+            stepSize: 0.0001
+            onValueChanged: updateProperty_emorH3()
+        }
+        KEYFRAME_BUTTON(emorH3)
+        Shotcut.UndoButton {
+            id: emorH3Undo
+            onClicked: emorH3Slider.value = 0.0
+        }
+
+        Label {
+            text: qsTr('EMoR h(4)')
+            Layout.alignment: Qt.AlignRight
+        }
+        Shotcut.SliderSpinner {
+            id: emorH4Slider
+            minimumValue: -10
+            maximumValue: 10
+            suffix: ' '
+            decimals: 4
+            stepSize: 0.0001
+            onValueChanged: updateProperty_emorH4()
+        }
+        KEYFRAME_BUTTON(emorH4)
+        Shotcut.UndoButton {
+            id: emorH4Undo
+            onClicked: emorH4Slider.value = 0.0
+        }
+
+        Label {
+            text: qsTr('EMoR h(5)')
+            Layout.alignment: Qt.AlignRight
+        }
+        Shotcut.SliderSpinner {
+            id: emorH5Slider
+            minimumValue: -10
+            maximumValue: 10
+            suffix: ' '
+            decimals: 4
+            stepSize: 0.0001
+            onValueChanged: updateProperty_emorH5()
+        }
+        KEYFRAME_BUTTON(emorH5)
+        Shotcut.UndoButton {
+            id: emorH5Undo
+            onClicked: emorH5Slider.value = 0.0
         }
     }
 

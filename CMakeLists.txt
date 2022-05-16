@@ -3,7 +3,17 @@ project (bigsh0t)
 
 set (CPP_SOURCE src/main/cpp)
 set (CPP_TEST_SOURCE src/test/cpp)
-set (COMMON_FILES ${CPP_SOURCE}/Matrix.cpp ${CPP_SOURCE}/MPFilter.cpp ${CPP_SOURCE}/MPSource.cpp ${CPP_SOURCE}/Graphics.cpp ${CPP_SOURCE}/ImageProcessing.cpp ${CPP_SOURCE}/Math.cpp ${CPP_SOURCE}/MP4.cpp ${CPP_SOURCE}/SummedAreaTable.cpp)
+set (COMMON_FILES
+    ${CPP_SOURCE}/EMoR.cpp
+    ${CPP_SOURCE}/Matrix.cpp
+    ${CPP_SOURCE}/MPFilter.cpp
+    ${CPP_SOURCE}/MPSource.cpp
+    ${CPP_SOURCE}/Graphics.cpp
+    ${CPP_SOURCE}/ImageProcessing.cpp
+    ${CPP_SOURCE}/Math.cpp
+    ${CPP_SOURCE}/MP4.cpp
+    ${CPP_SOURCE}/SummedAreaTable.cpp
+)
 set (FREI0R_HOME src/frei0r)
 set (PREPROCESSOR_COMMAND cat)
 set (QML_POSTPROCESSOR_COMMAND python ${PROJECT_SOURCE_DIR}/format_qml.py)

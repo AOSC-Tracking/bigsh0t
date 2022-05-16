@@ -6,6 +6,7 @@
 
 #include "frei0r.hpp"
 #include "Matrix.hpp"
+#include "EMoR.hpp"
 #include "MPFilter.hpp"
 #include "ImageProcessing.hpp"
 #include "Frei0rParameter.hpp"
@@ -17,6 +18,8 @@
 enum Projection {
     EQUIDISTANT_FISHEYE = 0
 };
+
+const int MAP_ENTRY_SIZE = 7;
 
 class HemiToEquirect : public Frei0rFilter, MPFilter {
 
@@ -37,12 +40,43 @@ class HemiToEquirect : public Frei0rFilter, MPFilter {
     Frei0rParameter<double,double> nadirRadius;
     Frei0rParameter<double,double> nadirCorrectionStart;
 
+    Frei0rParameter<double,double> distortionA;
+    Frei0rParameter<double,double> distortionB;
+    Frei0rParameter<double,double> distortionC;
+    Frei0rParameter<double,double> distortionRadius;
+
+    Frei0rParameter<double,double> vignettingA;
+    Frei0rParameter<double,double> vignettingB;
+    Frei0rParameter<double,double> vignettingC;
+    Frei0rParameter<double,double> vignettingD;
+    Frei0rParameter<double,double> vignettingRadius;
+
+    Frei0rParameter<double,double> emorH1;
+    Frei0rParameter<double,double> emorH2;
+    Frei0rParameter<double,double> emorH3;
+    Frei0rParameter<double,double> emorH4;
+    Frei0rParameter<double,double> emorH5;
+    bool emorEnabled;
     std::mutex lock;
 
+    /**
+     * Map consist of MAP_ENTRY_SIZE records:
+     *
+     * 0: srcX
+     * 1: srcY
+     * 2: vignette correction for srcX,SrcY
+     * 3: blendSrcX ( < 0 if no blending )
+     * 4: blendSrcY ( < 0 if no blending )
+     * 5: vignette correction for blendSrcX,blendSrcY
+     * 6: blend factor
+     */
     float* map;
     bool updateMap;
 
-    HemiToEquirect(unsigned int width, unsigned int height) : Frei0rFilter (width, height) {
+    EMoR emor;
+    EMoR invEmor;
+
+    HemiToEquirect(unsigned int width, unsigned int height) : Frei0rFilter (width, height) { /*, emor(), invEmor() */
         yaw = 0.357f;
         pitch = 0.389f;
         roll = -0.693f;
@@ -60,6 +94,23 @@ class HemiToEquirect : public Frei0rFilter, MPFilter {
         backUp = 270.0f;
         nadirRadius = 428.0 / 1920.0f;
         nadirCorrectionStart = 0.8f;
+
+        distortionA = 0.0;
+        distortionB = 0.0;
+        distortionC = 0.0;
+        distortionRadius = 0.0;
+        vignettingA = 0.0;
+        vignettingB = 0.0;
+        vignettingC = 0.0;
+        vignettingD = 0.0;
+        vignettingRadius = 0.0;
+
+        emorH1 = 0.0;
+        emorH2 = 0.0;
+        emorH3 = 0.0;
+        emorH4 = 0.0;
+        emorH5 = 0.0;
+        emorEnabled = false;
 
         map = NULL;
         updateMap = true;
@@ -82,6 +133,24 @@ class HemiToEquirect : public Frei0rFilter, MPFilter {
         register_fparam(backY, "backY", "");
         register_fparam(backUp, "backUp", "");
 
+        register_fparam(distortionA, "distortionA", "");
+        register_fparam(distortionB, "distortionB", "");
+        register_fparam(distortionC, "distortionC", "");
+        register_fparam(distortionRadius, "distortionRadius", "");
+
+        register_fparam(vignettingA, "vignettingA", "");
+        register_fparam(vignettingB, "vignettingB", "");
+        register_fparam(vignettingC, "vignettingC", "");
+        register_fparam(vignettingD, "vignettingD", "");
+        register_fparam(vignettingRadius, "vignettingRadius", "");
+
+        register_fparam(emorH1, "emorH1", "");
+        register_fparam(emorH2, "emorH2", "");
+        register_fparam(emorH3, "emorH3", "");
+        register_fparam(emorH4, "emorH4", "");
+        register_fparam(emorH5, "emorH5", "");
+        register_param(emorEnabled, "emorEnabled", "");
+
         register_fparam(interpolation, "interpolation", "");
         register_fparam(projection, "projection", "");
     }
@@ -102,10 +171,19 @@ class HemiToEquirect : public Frei0rFilter, MPFilter {
 
         if (map == NULL || yaw.changed() || pitch.changed() || roll.changed() || projection.changed() || fov.changed() ||
                 radius.changed() || frontX.changed() || frontY.changed() || frontUp.changed() || backX.changed() || backY.changed() ||
-                backUp.changed() || nadirRadius.changed() || nadirCorrectionStart.changed()) {
+                backUp.changed() || nadirRadius.changed() || nadirCorrectionStart.changed() ||
+                distortionA.changed() || distortionB.changed() || distortionC.changed() || distortionRadius.changed() ||
+                vignettingA.changed() || vignettingB.changed() || vignettingC.changed() || vignettingD.changed() || vignettingRadius.changed() ||
+                emorH1.changed() || emorH2.changed() || emorH3.changed() || emorH4.changed() || emorH5.changed()) {
             if (map == NULL) {
-                map = (float*) malloc (width * height * 5 * sizeof(float));
+                map = (float*) malloc (width * height * MAP_ENTRY_SIZE * sizeof(float));
             }
+            std::vector<double> emorParameters = { emorH1, emorH2, emorH3, emorH4, emorH5 };
+            emor.compute(emorParameters, 16, 255);
+            emor.initialize();
+            invEmor.compute(emorParameters, 8, 65536);
+            invEmor.invert();
+            invEmor.initialize();
             updateMap = true;
         } else {
             updateMap = false;
@@ -125,7 +203,7 @@ class HemiToEquirect : public Frei0rFilter, MPFilter {
     }
 
   protected:
-    void sample (int mx, int my, int mz, double fov2, double radius, double thetaH, double phi, double up_dir, Matrix3& hemi_transform,
+    void sample (int mx, int my, int mz, double fov2, double thetaH, double phi, double up_dir, Matrix3& hemi_transform,
                  double nadir_correction_start, double nadir_radius_scale, double cx, double cy) {
         Vector3 ray;
         Vector3 ray2;
@@ -151,24 +229,60 @@ class HemiToEquirect : public Frei0rFilter, MPFilter {
 
         double srcX, srcY;
 
+        /**
+         * radius normalized coordinates (1.0 = point lies on radius)
+         */
+        double offAxisDistance;
+        double vignetting = -1;
+
         switch (projection) {
         case Projection::EQUIDISTANT_FISHEYE:
-            srcX = ((cos(off_axis_direction) * off_axis_angle / fov2) * radius);
-            srcY = ((sin(off_axis_direction) * off_axis_angle / fov2) * radius);
+            offAxisDistance = off_axis_angle / fov2;
+            break;
+        }
+
+        if (radius > 0) {
+            if (vignettingRadius > 0.0) {
+                double vignettingOffAxisDistance = offAxisDistance * radius / vignettingRadius;
+                double vignettingOffAxisDistance2 = vignettingOffAxisDistance * vignettingOffAxisDistance;
+                vignetting = ((/* r^6 */ vignettingD * vignettingOffAxisDistance2 + /* r^4 */ vignettingC) * vignettingOffAxisDistance2 + /* r^2 */ vignettingB) * vignettingOffAxisDistance2 + vignettingA;
+                if (vignetting > 0.004) {
+                    vignetting = 256 * 1.0 / vignetting;
+                } else {
+                    vignetting = -1.0;
+                }
+            }
+
+            if (distortionRadius > 0.0) {
+                double distortionD = 1.0 - distortionA - distortionB - distortionC;
+
+                double distortionOffAxisDistance = offAxisDistance * radius / distortionRadius;
+                double correctedOffAxisDistance = (((distortionA * distortionOffAxisDistance + distortionB) * distortionOffAxisDistance + distortionC) * distortionOffAxisDistance + distortionD) * distortionOffAxisDistance;
+                offAxisDistance = correctedOffAxisDistance * distortionRadius / radius;
+            }
+        }
+
+        switch (projection) {
+        case Projection::EQUIDISTANT_FISHEYE:
+            srcX = cos(off_axis_direction) * offAxisDistance * radius * width;
+            srcY = sin(off_axis_direction) * offAxisDistance * radius * width;
             break;
         }
 
         srcX += cx;
         srcY += cy;
 
-        int midx = ((my * width) + mx) * 5 + 2 * mz;
+        int midx = ((my * width) + mx) * MAP_ENTRY_SIZE;
+        int mcidx = midx + 3 * mz;
 
         if (srcX >= 0 && srcY >= 0 && srcX < width && srcY < height) {
-            map[midx + 0] = (float) srcX;
-            map[midx + 1] = (float) srcY;
+            map[mcidx + 0] = (float) srcX;
+            map[mcidx + 1] = (float) srcY;
+            map[mcidx + 2] = (float) vignetting;
         } else {
-            map[midx + 0] = -1;
-            map[midx + 1] = -1;
+            map[mcidx + 0] = -1;
+            map[mcidx + 1] = -1;
+            map[mcidx + 2] = -1;
         }
     }
 
@@ -186,25 +300,51 @@ class HemiToEquirect : public Frei0rFilter, MPFilter {
         for (int yi = start_scanline; yi < start_scanline + num_scanlines; yi++) {
             for (int xi = 0; xi < width; xi++) {
                 int idx = ((yi * width) + xi);
-                int midx = idx * 5;
+                int midx = idx * MAP_ENTRY_SIZE;
                 if (map[midx] > 0) {
-                    if (map[midx + 2] < 0) {
+                    if (map[midx + 3] < 0) {
                         // No blend
 
                         float sx = map[midx + 0];
                         float sy = map[midx + 1];
-                        out[idx] = sampleImage (in, sx, sy);
+                        float vi = map[midx + 2];
+
+                        uint32_t c = sampleImage (in, sx, sy);
+                        if (vi >= 0.0f) {
+                            if (!emorEnabled) {
+                                c = int32Scale(c, vi, vi, vi, 8);
+                            } else {
+                                c = int32Scale(c, vi, vi, vi, 8, emor, invEmor);
+                            }
+                        }
+                        out[idx] = c;
                     } else {
                         // Blend
                         float sxA = map[midx + 0];
                         float syA = map[midx + 1];
+                        float viA = map[midx + 2];
                         uint32_t blendA = sampleImage (in, sxA, syA);
+                        if (viA >= 0.0f) {
+                            if (!emorEnabled) {
+                                blendA = int32Scale(blendA, viA, viA, viA, 8);
+                            } else {
+                                blendA = int32Scale(blendA, viA, viA, viA, 8, emor, invEmor);
+                            }
+                        }
 
-                        float sxB = map[midx + 2];
-                        float syB = map[midx + 3];
+                        float sxB = map[midx + 3];
+                        float syB = map[midx + 4];
+                        float viB = map[midx + 5];
                         uint32_t blendB = sampleImage (in, sxB, syB);
+                        if (viB >= 0.0f) {
+                            if (!emorEnabled) {
+                                blendB = int32Scale(blendB, viB, viB, viB, 8);
+                            } else {
+                                blendB = int32Scale(blendB, viB, viB, viB, 8, emor, invEmor);
+                            }
+                        }
 
-                        float blend = map[midx + 4];
+                        float blend = map[midx + 6];
 
                         unsigned char* blendCA = (unsigned char*) &blendA;
                         unsigned char* blendCB = (unsigned char*) &blendB;
@@ -246,7 +386,7 @@ class HemiToEquirect : public Frei0rFilter, MPFilter {
         double fov90radius = 90.0f * (radius * 2) / fov;
         double fov2 = (radius * 90.0f / fov90radius) * 2 * M_PI / 360.0f;
 
-        double theta_margin = fov2 - M_PI / 2;
+        double theta_margin = -cos(fov2);
         double nadir_radius_scale = nadirRadius / radius;
 
         double pixelRadius = radius * w;
@@ -263,34 +403,36 @@ class HemiToEquirect : public Frei0rFilter, MPFilter {
             double phi = M_PI * ((double) yi - h / 2) / h;
             for (int xi = 0; xi < w; xi++) {
                 double theta = 2 * M_PI * ((double) xi - w / 2) / w;
+                double z = cos(theta) * cos(phi);
 
-                int midx = ((yi * width) + xi) * 5;
+                int midx = ((yi * width) + xi) * MAP_ENTRY_SIZE;
 
-                if (theta < -M_PI / 2 - theta_margin || theta > M_PI / 2 + theta_margin) {
+                if (z < -theta_margin) {
+                    // Back hemisphere, sides of image
                     if (theta < 0) {
                         theta = theta + M_PI;
                     } else {
                         theta = theta - M_PI;
                     }
 
-                    sample(xi, yi, 0, fov2, pixelRadius, theta, phi, back_up, xform_back, nadirCorrectionStart, nadir_radius_scale, back_x, back_y);
-                    map[midx + 2] = -1;
-                } else if (theta > -M_PI / 2 + theta_margin && theta < M_PI / 2 - theta_margin) {
-                    sample(xi, yi, 0, fov2, pixelRadius, theta, phi, front_up, xform_front, nadirCorrectionStart, nadir_radius_scale, front_x, front_y);
-                    map[midx + 2] = -1;
+                    sample(xi, yi, 0, fov2, theta, phi, back_up, xform_back, nadirCorrectionStart, nadir_radius_scale, back_x, back_y);
+                    map[midx + 3] = -1;
+                } else if (z > theta_margin) {
+                    // front hemisphere, center of image
+                    sample(xi, yi, 0, fov2, theta, phi, front_up, xform_front, nadirCorrectionStart, nadir_radius_scale, front_x, front_y);
+                    map[midx + 3] = -1;
                 } else {
-                    sample(xi, yi, 0, fov2, pixelRadius, theta, phi, front_up, xform_front, nadirCorrectionStart, nadir_radius_scale, front_x, front_y);
-                    float blend = 0.0f;
+                    // blend margin
+                    sample(xi, yi, 0, fov2, theta, phi, front_up, xform_front, nadirCorrectionStart, nadir_radius_scale, front_x, front_y);
+                    float blend = (theta_margin - z) / (2 * theta_margin);
                     if (theta < 0) {
-                        blend = -(float) ((theta + M_PI / 2 - theta_margin) / (2 * theta_margin));
                         theta = theta + M_PI;
                     } else {
-                        blend = (float) ((theta - M_PI / 2 + theta_margin) / (2 * theta_margin));
                         theta = theta - M_PI;
                     }
-                    sample(xi, yi, 1, fov2, pixelRadius, theta, phi, back_up, xform_back, nadirCorrectionStart, nadir_radius_scale, back_x, back_y);
+                    sample(xi, yi, 1, fov2, theta, phi, back_up, xform_back, nadirCorrectionStart, nadir_radius_scale, back_x, back_y);
 
-                    map[midx + 4] = blend;
+                    map[midx + 6] = blend;
                 }
             }
         }

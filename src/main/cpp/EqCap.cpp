@@ -2,6 +2,7 @@
 #include <limits>
 #include <climits>
 #include <cmath>
+#include <cstring>
 #include <mutex>
 
 #include "frei0r.hpp"

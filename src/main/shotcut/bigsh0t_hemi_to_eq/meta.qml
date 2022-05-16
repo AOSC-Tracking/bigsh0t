@@ -11,7 +11,10 @@ Metadata {
     keyframes {
         allowAnimateIn: true
         allowAnimateOut: true
-        simpleProperties: ['yaw', "pitch", "roll", "frontX", "frontY", "frontUp", "backX", "backY", "backUp", "fov", "radius", "nadirRadius", "nadirCorrectionStart"]
+        simpleProperties: ['yaw', "pitch", "roll", "frontX", "frontY", "frontUp", "backX", "backY", "backUp", "fov", "radius", "nadirRadius", "nadirCorrectionStart",
+            "distortionA", "distortionB", "distortionC", "distortionRadius",
+            "vignettingA", "vignettingB", "vignettingC", "vignettingD", "vignettingRadius",
+            "emorH1", "emorH2", "emorH3", "emorH4", "emorH5"]
         parameters: [
             Parameter {
                 name: qsTr('Yaw')
@@ -116,6 +119,118 @@ Metadata {
                 isCurve: true
                 minimum: 0
                 maximum: 1
+            },
+            Parameter {
+                name: qsTr('distortionA')
+                property: 'distortionA'
+                isSimple: true
+                isCurve: true
+                minimum: -2
+                maximum: 2
+            },
+            Parameter {
+                name: qsTr('distortionB')
+                property: 'distortionB'
+                isSimple: true
+                isCurve: true
+                minimum: -2
+                maximum: 2
+            },
+            Parameter {
+                name: qsTr('distortionC')
+                property: 'distortionC'
+                isSimple: true
+                isCurve: true
+                minimum: -2
+                maximum: 2
+            },
+            Parameter {
+                name: qsTr('distortionRadius')
+                property: 'distortionRadius'
+                isSimple: true
+                isCurve: true
+                minimum: 0
+                maximum: 1
+            },
+            Parameter {
+                name: qsTr('vignettingA')
+                property: 'vignettingA'
+                isSimple: true
+                isCurve: true
+                minimum: -10
+                maximum: 10
+            },
+            Parameter {
+                name: qsTr('vignettingB')
+                property: 'vignettingB'
+                isSimple: true
+                isCurve: true
+                minimum: -10
+                maximum: 10
+            },
+            Parameter {
+                name: qsTr('vignettingC')
+                property: 'vignettingC'
+                isSimple: true
+                isCurve: true
+                minimum: -10
+                maximum: 10
+            },
+            Parameter {
+                name: qsTr('vignettingD')
+                property: 'vignettingD'
+                isSimple: true
+                isCurve: true
+                minimum: -10
+                maximum: 10
+            },
+            Parameter {
+                name: qsTr('vignettingRadius')
+                property: 'vignettingRadius'
+                isSimple: true
+                isCurve: true
+                minimum: 0
+                maximum: 2
+            },
+            Parameter {
+                name: qsTr('emorH1')
+                property: 'emorH1'
+                isSimple: true
+                isCurve: true
+                minimum: -10
+                maximum: 10
+            },
+            Parameter {
+                name: qsTr('emorH2')
+                property: 'emorH2'
+                isSimple: true
+                isCurve: true
+                minimum: -10
+                maximum: 10
+            },
+            Parameter {
+                name: qsTr('emorH3')
+                property: 'emorH3'
+                isSimple: true
+                isCurve: true
+                minimum: -10
+                maximum: 10
+            },
+            Parameter {
+                name: qsTr('emorH4')
+                property: 'emorH4'
+                isSimple: true
+                isCurve: true
+                minimum: -10
+                maximum: 10
+            },
+            Parameter {
+                name: qsTr('emorH5')
+                property: 'emorH5'
+                isSimple: true
+                isCurve: true
+                minimum: -10
+                maximum: 10
             }
         ]
     }

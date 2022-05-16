@@ -4,8 +4,10 @@
 #include <cmath>
 #include <algorithm>
 #include <iomanip>
+#include <inttypes.h>
 
 #include "sse_compat.hpp"
+#include "EMoR.hpp"
 #include "ImageProcessing.hpp"
 #include "Matrix.hpp"
 #include "Math.hpp"
@@ -13,6 +15,8 @@
 #define EXPAND_ABGR64(v) ( (v & 0xff000000) << 24 ) | ( (v & 0x00ff0000) << 16 ) | ( (v & 0x0000ff00) << 8 ) | ( (v & 0x000000ff) )
 #define COMPRESS_ABGR64(v) ( (v >> 24) & 0xff000000 ) | ( (v >> 16) & 0x00ff0000) | ( (v >> 8) & 0x0000ff00 ) | ( v & 0x000000ff )
 
+#define CLAMP_ANY(val,lo,hi) ( val < lo ) ? lo : (hi < val ? hi : val)
+#define WRAP_ANY(val,hi) ( val >= hi ) ? (val - hi) : (val < 0 ? (val + hi) : val)
 
 #ifdef USE_SSE
 void dumpSSE(char* desc, __m128i reg) {
@@ -117,6 +121,13 @@ uint32_t int64Blerp(const uint32_t* frame, int ai, int bi, int ci, int di, int a
     return _int64Blerp(frame, ai, bi, ci, di, ax, ay, width, height);
 }
 
+/**
+ * 7-bit linear interpolation.
+ *
+ * @param a the value to interpolate from
+ * @param b the value to interpolate to
+ * @param x the position between the two values, 0-127.
+ */
 uint32_t int64lerp(const uint32_t a, const uint32_t b, const int x) {
     uint64_t a64 = a;
     uint64_t b64 = b;
@@ -126,6 +137,107 @@ uint32_t int64lerp(const uint32_t a, const uint32_t b, const int x) {
     uint64_t C = (A + (((B - A) * x) >> 7) & 0x00ff00ff00ff00ff);
     return COMPRESS_ABGR64(C);
 }
+
+class SRGBHelper {
+  public:
+    SRGBHelper(int bitshift) : bitshift(bitshift) {
+        toLinear = new int32_t[256];
+        toSrgb = new int32_t[256 << bitshift];
+
+        for (int i = 0; i < 256; ++i) {
+            double srgb = 1.0 * i / 255.0;
+            double linear = srgbToLinearF(srgb);
+            toLinear[i] = (int32_t) (linear * (256 << bitshift));
+        }
+
+        for (int i = 0; i < (256 << bitshift); ++i) {
+            double linear = 1.0 * i / (256 << bitshift);
+            double srgb = linearToSrgbF(linear);
+            toSrgb[i] = (int32_t) (srgb * 255.0);
+        }
+    }
+
+    ~SRGBHelper() {
+        delete[] toLinear;
+        delete[] toSrgb;
+    };
+
+    int32_t srgbToLinear(int32_t srgb) {
+        return toLinear[srgb];
+    }
+
+    int32_t linearToSrgb(int32_t linear) {
+        return toSrgb[linear];
+    }
+
+  private:
+    int bitshift;
+    int32_t* toLinear;
+    int32_t* toSrgb;
+
+    double srgbToLinearF(double srgb) {
+        if (srgb < 0.04045) {
+            return srgb / 12.92;
+        } else {
+            return pow((srgb+0.055)/1.055, 2.4);
+        }
+    }
+
+    double linearToSrgbF(double linear) {
+        if (linear < 0.0031308) {
+            return linear * 12.92;
+        } else {
+            return pow(1.055*linear, 1/2.4) - 0.055;
+        }
+    }
+};
+
+SRGBHelper srgbHelper(8);
+
+/**
+ * 8-bit scaling.
+ *
+ * @param v the rgba value to scale
+ * @param r bitshifted multiplier for r
+ * @param g bitshifted multiplier for g
+ * @param b bitshifted multiplier for b
+ * @param den number of positions to bitshift
+ */
+uint32_t int32Scale(const uint32_t v, const uint32_t rs, const uint32_t gs, const uint32_t bs, const uint32_t den, const LUT& lut, const LUT& invLut) {
+    int32_t r = (v      ) & 0xff;
+    int32_t g = (v >> 8 ) & 0xff;
+    int32_t b = (v >> 16) & 0xff;
+    int32_t a = (v >> 24) & 0xff;
+
+    r = lut.sampleInt((invLut.sampleInt(r) * rs) >> den);
+    g = lut.sampleInt((invLut.sampleInt(g) * gs) >> den);
+    b = lut.sampleInt((invLut.sampleInt(b) * bs) >> den);
+
+    return (
+               (CLAMP_ANY(r, 0, 255)) |
+               ((CLAMP_ANY(g, 0, 255)) << 8) |
+               ((CLAMP_ANY(b, 0, 255)) << 16) |
+               (a << 24)
+           );
+}
+
+uint32_t int32Scale(const uint32_t v, const uint32_t rs, const uint32_t gs, const uint32_t bs, const uint32_t shift) {
+    int32_t r = (v      ) & 0xff;
+    int32_t g = (v >> 8 ) & 0xff;
+    int32_t b = (v >> 16) & 0xff;
+    int32_t a = (v >> 24) & 0xff;
+
+    r = (r * rs) >> shift;
+    g = (g * gs) >> shift;
+    b = (b * bs) >> shift;
+
+    return (
+               (CLAMP_ANY(r, 0, 255)) |
+               ((CLAMP_ANY(g, 0, 255)) << 8) |
+               ((CLAMP_ANY(b, 0, 255)) << 16) |
+               (a << 24));
+}
+
 
 inline uint32_t blerp(const uint32_t* frame, int ai, int bi, int ci, int di, int ax, int ay, int width, int height) {
 #ifdef USE_SSE
@@ -159,10 +271,6 @@ uint32_t sampleBilinear (const uint32_t* frame, double x, double y, int width, i
 
     return blerp(frame, iy0w + ix0, iy0w + ix1, iy1w + ix0, iy1w + ix1, ax, ay, width, height);
 }
-
-#define CLAMP_ANY(val,lo,hi) ( val < lo ) ? lo : (hi < val ? hi : val)
-#define WRAP_ANY(val,hi) ( val >= hi ) ? (val - hi) : (val < 0 ? (val + hi) : val)
-
 
 uint32_t sampleBilinearWrappedClamped (const uint32_t* frame, double x, double y, int width, int height) {
     int ix0 = (int) x;

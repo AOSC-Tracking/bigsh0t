@@ -11,6 +11,7 @@
 #include "../../main/cpp/MP4.hpp"
 #include "../../main/cpp/ImageProcessing.hpp"
 #include "../../main/cpp/SummedAreaTable.hpp"
+#include "../../main/cpp/EMoR.hpp"
 
 void testMP4() {
     MP4Parser parser(std::string("c:\\temp\\test.mp4"));
@@ -328,6 +329,26 @@ void testSummedAreaTable() {
     sat.dump();
 }
 
+void testEMoR() {
+    std::vector<double> parameters;
+    //Ra-3.30760216712952 Rb2.92867398262024 Rc0.716169774532318 Rd-0.31006196141243 Re-0.453573703765869
+    parameters.push_back(-3.30760216712952);
+    parameters.push_back(2.92867398262024);
+    parameters.push_back(0.716169774532318);
+    parameters.push_back(-0.31006196141243);
+    parameters.push_back(-0.453573703765869);
+    EMoR emor;
+    emor.compute(parameters, 16, 255);
+    emor.makeMonotone();
+    emor.initialize();
+    EMoR inv = EMoR().compute(parameters, 8, 65536);
+    inv.makeMonotone();
+    inv.initialize();
+    for (int i = 0; i < 256; i += 1) {
+        std::cout << emor.sampleInt(i * 256) << ";" << inv.sampleInt(i) << std::endl;
+    }
+}
+
 typedef void (*TestCase)();
 
 void runTest(const char* name, TestCase testCase) {
@@ -344,7 +365,8 @@ void runTest(const char* name, TestCase testCase) {
 #define RUN_TEST(F) runTest(#F, F)
 
 int main(int argc, char* argv[]) {
-    RUN_TEST(testSummedAreaTable);
+    RUN_TEST(testEMoR);
+    //RUN_TEST(testSummedAreaTable);
     //RUN_TEST(testBlerp);
     //RUN_TEST(testFastAtan2);
     //RUN_TEST(testFastAtan2Double);
