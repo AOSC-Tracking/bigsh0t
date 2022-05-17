@@ -198,7 +198,7 @@ class ZenithCorrection : public Frei0rFilter, MPFilter {
     }
 };
 
-frei0r::construct<ZenithCorrection> plugin("zenith_correction",
+frei0r::construct<ZenithCorrection> plugin("bigsh0t_zenith_correction",
         "Applies video zenith correction data.",
         "Leo Sutic <leo@sutic.nu>",
         BIGSH0T_VERSION_MAJOR, BIGSH0T_VERSION_MINOR, F0R_COLOR_MODEL_PACKED32);

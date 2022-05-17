@@ -1022,7 +1022,7 @@ class Stabilize360 : public Frei0rFilter, MPFilter {
     }
 };
 
-frei0r::construct<Stabilize360> plugin("stabilize_360",
+frei0r::construct<Stabilize360> plugin("bigsh0t_stabilize_360",
                                        "Stabilizes 360 equirectangular footage.",
                                        "Leo Sutic <leo@sutic.nu>",
                                        BIGSH0T_VERSION_MAJOR, BIGSH0T_VERSION_MINOR, F0R_COLOR_MODEL_PACKED32);

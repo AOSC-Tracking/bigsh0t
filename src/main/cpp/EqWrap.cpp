@@ -172,7 +172,7 @@ class EqWrap : public Frei0rFilter, MPFilter {
 
 };
 
-frei0r::construct<EqWrap> plugin("eq_wrap",
+frei0r::construct<EqWrap> plugin("bigsh0t_eq_wrap",
                                  "Stretches a partial pano sphere to cover the entire sphere.",
                                  "Leo Sutic <leo@sutic.nu>",
                                  BIGSH0T_VERSION_MAJOR, BIGSH0T_VERSION_MINOR, F0R_COLOR_MODEL_RGBA8888);

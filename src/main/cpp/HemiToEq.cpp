@@ -443,7 +443,7 @@ class HemiToEquirect : public Frei0rFilter, MPFilter {
 
 };
 
-frei0r::construct<HemiToEquirect> plugin("hemi_to_eq",
+frei0r::construct<HemiToEquirect> plugin("bigsh0t_hemi_to_eq",
         "Transforms dual-hemisphere video to equirectangular.",
         "Leo Sutic <leo@sutic.nu>",
         BIGSH0T_VERSION_MAJOR, BIGSH0T_VERSION_MINOR, F0R_COLOR_MODEL_PACKED32);

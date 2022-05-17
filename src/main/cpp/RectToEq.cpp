@@ -127,7 +127,7 @@ class RectToEq : public frei0r::filter, MPFilter {
 
 };
 
-frei0r::construct<RectToEq> plugin("rect_to_eq",
+frei0r::construct<RectToEq> plugin("bigsh0t_rect_to_eq",
                                    "Converts a rectilinear image to an equirectangular map.",
                                    "Leo Sutic <leo@sutic.nu>",
                                    BIGSH0T_VERSION_MAJOR, BIGSH0T_VERSION_MINOR, F0R_COLOR_MODEL_PACKED32);

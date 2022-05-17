@@ -117,7 +117,7 @@ class Transform360 : public Frei0rFilter, MPFilter {
     }
 };
 
-frei0r::construct<Transform360> plugin("transform_360",
+frei0r::construct<Transform360> plugin("bigsh0t_transform_360",
                                        "Rotates an equirectangular map.",
                                        "Leo Sutic <leo@sutic.nu>",
                                        BIGSH0T_VERSION_MAJOR, BIGSH0T_VERSION_MINOR, F0R_COLOR_MODEL_PACKED32);
