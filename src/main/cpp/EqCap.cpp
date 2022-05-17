@@ -13,6 +13,7 @@
 #include "Math.hpp"
 #include "ImageProcessing.hpp"
 #include "SummedAreaTable.hpp"
+#include "Version.hpp"
 
 class CapParameters {
   public:
@@ -254,4 +255,4 @@ class EqCap : public Frei0rFilter, MPFilter {
 frei0r::construct<EqCap> plugin("eq_cap",
                                 "Masks part of the VR sphere.",
                                 "Leo Sutic <leo@sutic.nu>",
-                                2, 6, F0R_COLOR_MODEL_RGBA8888);
+                                BIGSH0T_VERSION_MAJOR, BIGSH0T_VERSION_MINOR, F0R_COLOR_MODEL_RGBA8888);

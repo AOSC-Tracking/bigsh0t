@@ -10,6 +10,7 @@
 #include "Frei0rParameter.hpp"
 #include "Frei0rFilter.hpp"
 #include "Math.hpp"
+#include "Version.hpp"
 
 
 class EqMask : public Frei0rFilter, MPFilter {
@@ -162,4 +163,4 @@ class EqMask : public Frei0rFilter, MPFilter {
 frei0r::construct<EqMask> plugin("eq_mask",
                                  "Masks part of the VR sphere.",
                                  "Leo Sutic <leo@sutic.nu>",
-                                 2, 2, F0R_COLOR_MODEL_RGBA8888);
+                                 BIGSH0T_VERSION_MAJOR, BIGSH0T_VERSION_MINOR, F0R_COLOR_MODEL_RGBA8888);
