@@ -17,7 +17,6 @@ Metadata {
             Parameter {
                 name: qsTr('Yaw')
                 property: 'yaw'
-                isSimple: true
                 isCurve: true
                 minimum: -720
                 maximum: 720
@@ -25,7 +24,6 @@ Metadata {
             Parameter {
                 name: qsTr('Pitch')
                 property: 'pitch'
-                isSimple: true
                 isCurve: true
                 minimum: -720
                 maximum: 720
@@ -33,7 +31,6 @@ Metadata {
             Parameter {
                 name: qsTr('Roll')
                 property: 'roll'
-                isSimple: true
                 isCurve: true
                 minimum: -720
                 maximum: 720
@@ -41,7 +38,6 @@ Metadata {
             Parameter {
                 name: qsTr('FOV')
                 property: 'fov'
-                isSimple: true
                 isCurve: true
                 minimum: 1
                 maximum: 179
@@ -49,7 +45,6 @@ Metadata {
 			Parameter {
                 name: qsTr('Amount')
                 property: 'amount'
-                isSimple: true
                 isCurve: true
                 minimum: 0
                 maximum: 100

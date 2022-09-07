@@ -19,7 +19,6 @@ Metadata {
             Parameter {
                 name: qsTr('Yaw')
                 property: 'yaw'
-                isSimple: true
                 isCurve: true
                 minimum: -360
                 maximum: 360
@@ -27,7 +26,6 @@ Metadata {
             Parameter {
                 name: qsTr('Pitch')
                 property: 'pitch'
-                isSimple: true
                 isCurve: true
                 minimum: -180
                 maximum: 180
@@ -35,7 +33,6 @@ Metadata {
             Parameter {
                 name: qsTr('Roll')
                 property: 'roll'
-                isSimple: true
                 isCurve: true
                 minimum: -180
                 maximum: 180
@@ -43,7 +40,6 @@ Metadata {
             Parameter {
                 name: qsTr('FrontX')
                 property: 'frontX'
-                isSimple: true
                 isCurve: true
                 minimum: 0
                 maximum: 1
@@ -51,7 +47,6 @@ Metadata {
             Parameter {
                 name: qsTr('FrontY')
                 property: 'frontY'
-                isSimple: true
                 isCurve: true
                 minimum: 0
                 maximum: 1
@@ -59,7 +54,6 @@ Metadata {
             Parameter {
                 name: qsTr('FrontUp')
                 property: 'frontUp'
-                isSimple: true
                 isCurve: true
                 minimum: -360
                 maximum: 360
@@ -67,7 +61,6 @@ Metadata {
             Parameter {
                 name: qsTr('BackX')
                 property: 'backX'
-                isSimple: true
                 isCurve: true
                 minimum: 0
                 maximum: 1
@@ -75,7 +68,6 @@ Metadata {
             Parameter {
                 name: qsTr('BackY')
                 property: 'backY'
-                isSimple: true
                 isCurve: true
                 minimum: 0
                 maximum: 1
@@ -83,7 +75,6 @@ Metadata {
             Parameter {
                 name: qsTr('BackUp')
                 property: 'backUp'
-                isSimple: true
                 isCurve: true
                 minimum: -360
                 maximum: 360
@@ -91,7 +82,6 @@ Metadata {
             Parameter {
                 name: qsTr('Fov')
                 property: 'fov'
-                isSimple: true
                 isCurve: true
                 minimum: 0
                 maximum: 360
@@ -99,7 +89,6 @@ Metadata {
             Parameter {
                 name: qsTr('Radius')
                 property: 'radius'
-                isSimple: true
                 isCurve: true
                 minimum: 0
                 maximum: 1
@@ -107,7 +96,6 @@ Metadata {
             Parameter {
                 name: qsTr('NadirRadius')
                 property: 'nadirRadius'
-                isSimple: true
                 isCurve: true
                 minimum: 0
                 maximum: 1
@@ -115,7 +103,6 @@ Metadata {
             Parameter {
                 name: qsTr('nadirCorrectionStart')
                 property: 'nadirCorrectionStart'
-                isSimple: true
                 isCurve: true
                 minimum: 0
                 maximum: 1
@@ -123,7 +110,6 @@ Metadata {
             Parameter {
                 name: qsTr('distortionA')
                 property: 'distortionA'
-                isSimple: true
                 isCurve: true
                 minimum: -2
                 maximum: 2
@@ -131,7 +117,6 @@ Metadata {
             Parameter {
                 name: qsTr('distortionB')
                 property: 'distortionB'
-                isSimple: true
                 isCurve: true
                 minimum: -2
                 maximum: 2
@@ -139,7 +124,6 @@ Metadata {
             Parameter {
                 name: qsTr('distortionC')
                 property: 'distortionC'
-                isSimple: true
                 isCurve: true
                 minimum: -2
                 maximum: 2
@@ -147,7 +131,6 @@ Metadata {
             Parameter {
                 name: qsTr('distortionRadius')
                 property: 'distortionRadius'
-                isSimple: true
                 isCurve: true
                 minimum: 0
                 maximum: 1
@@ -155,7 +138,6 @@ Metadata {
             Parameter {
                 name: qsTr('vignettingA')
                 property: 'vignettingA'
-                isSimple: true
                 isCurve: true
                 minimum: -10
                 maximum: 10
@@ -163,7 +145,6 @@ Metadata {
             Parameter {
                 name: qsTr('vignettingB')
                 property: 'vignettingB'
-                isSimple: true
                 isCurve: true
                 minimum: -10
                 maximum: 10
@@ -171,7 +152,6 @@ Metadata {
             Parameter {
                 name: qsTr('vignettingC')
                 property: 'vignettingC'
-                isSimple: true
                 isCurve: true
                 minimum: -10
                 maximum: 10
@@ -179,7 +159,6 @@ Metadata {
             Parameter {
                 name: qsTr('vignettingD')
                 property: 'vignettingD'
-                isSimple: true
                 isCurve: true
                 minimum: -10
                 maximum: 10
@@ -187,7 +166,6 @@ Metadata {
             Parameter {
                 name: qsTr('vignettingRadius')
                 property: 'vignettingRadius'
-                isSimple: true
                 isCurve: true
                 minimum: 0
                 maximum: 2
@@ -195,7 +173,6 @@ Metadata {
             Parameter {
                 name: qsTr('emorH1')
                 property: 'emorH1'
-                isSimple: true
                 isCurve: true
                 minimum: -10
                 maximum: 10
@@ -203,7 +180,6 @@ Metadata {
             Parameter {
                 name: qsTr('emorH2')
                 property: 'emorH2'
-                isSimple: true
                 isCurve: true
                 minimum: -10
                 maximum: 10
@@ -211,7 +187,6 @@ Metadata {
             Parameter {
                 name: qsTr('emorH3')
                 property: 'emorH3'
-                isSimple: true
                 isCurve: true
                 minimum: -10
                 maximum: 10
@@ -219,7 +194,6 @@ Metadata {
             Parameter {
                 name: qsTr('emorH4')
                 property: 'emorH4'
-                isSimple: true
                 isCurve: true
                 minimum: -10
                 maximum: 10
@@ -227,7 +201,6 @@ Metadata {
             Parameter {
                 name: qsTr('emorH5')
                 property: 'emorH5'
-                isSimple: true
                 isCurve: true
                 minimum: -10
                 maximum: 10

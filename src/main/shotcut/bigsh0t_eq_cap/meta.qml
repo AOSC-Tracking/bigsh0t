@@ -36,7 +36,6 @@ Metadata {
             Parameter {
                 name: qsTr('topStart')
                 property: 'topStart'
-                isSimple: true
                 isCurve: true
                 minimum: 0
                 maximum: 90
@@ -44,7 +43,6 @@ Metadata {
             Parameter {
                 name: qsTr('topEnd')
                 property: 'topEnd'
-                isSimple: true
                 isCurve: true
                 minimum: 0
                 maximum: 90
@@ -52,7 +50,6 @@ Metadata {
             Parameter {
                 name: qsTr('topBlendIn')
                 property: 'topBlendIn'
-                isSimple: true
                 isCurve: true
                 minimum: 0
                 maximum: 90
@@ -60,7 +57,6 @@ Metadata {
             Parameter {
                 name: qsTr('topBlendOut')
                 property: 'topBlendOut'
-                isSimple: true
                 isCurve: true
                 minimum: 0
                 maximum: 90
@@ -68,7 +64,6 @@ Metadata {
             Parameter {
                 name: qsTr('topFadeIn')
                 property: 'topFadeIn'
-                isSimple: true
                 isCurve: true
                 minimum: 0
                 maximum: 90
@@ -76,7 +71,6 @@ Metadata {
             Parameter {
                 name: qsTr('topBlurWidthStart')
                 property: 'topBlurWidthStart'
-                isSimple: true
                 isCurve: true
                 minimum: 0
                 maximum: 360
@@ -84,7 +78,6 @@ Metadata {
             Parameter {
                 name: qsTr('topBlurWidthEnd')
                 property: 'topBlurWidthEnd'
-                isSimple: true
                 isCurve: true
                 minimum: 0
                 maximum: 360
@@ -92,7 +85,6 @@ Metadata {
             Parameter {
                 name: qsTr('topBlurHeightStart')
                 property: 'topBlurHeightStart'
-                isSimple: true
                 isCurve: true
                 minimum: 0
                 maximum: 90
@@ -100,7 +92,6 @@ Metadata {
             Parameter {
                 name: qsTr('topBlurHeightEnd')
                 property: 'topBlurHeightEnd'
-                isSimple: true
                 isCurve: true
                 minimum: 0
                 maximum: 90
@@ -109,7 +100,6 @@ Metadata {
             Parameter {
                 name: qsTr('bottomStart')
                 property: 'bottomStart'
-                isSimple: true
                 isCurve: true
                 minimum: 0
                 maximum: 90
@@ -117,7 +107,6 @@ Metadata {
             Parameter {
                 name: qsTr('bottomEnd')
                 property: 'bottomEnd'
-                isSimple: true
                 isCurve: true
                 minimum: 0
                 maximum: 90
@@ -125,7 +114,6 @@ Metadata {
             Parameter {
                 name: qsTr('bottomBlendIn')
                 property: 'bottomBlendIn'
-                isSimple: true
                 isCurve: true
                 minimum: 0
                 maximum: 90
@@ -133,7 +121,6 @@ Metadata {
             Parameter {
                 name: qsTr('bottomBlendOut')
                 property: 'bottomBlendOut'
-                isSimple: true
                 isCurve: true
                 minimum: 0
                 maximum: 90
@@ -141,7 +128,6 @@ Metadata {
             Parameter {
                 name: qsTr('bottomFadeIn')
                 property: 'bottomFadeIn'
-                isSimple: true
                 isCurve: true
                 minimum: 0
                 maximum: 90
@@ -149,7 +135,6 @@ Metadata {
             Parameter {
                 name: qsTr('bottomBlurWidthStart')
                 property: 'bottomBlurWidthStart'
-                isSimple: true
                 isCurve: true
                 minimum: 0
                 maximum: 360
@@ -157,7 +142,6 @@ Metadata {
             Parameter {
                 name: qsTr('bottomBlurWidthEnd')
                 property: 'bottomBlurWidthEnd'
-                isSimple: true
                 isCurve: true
                 minimum: 0
                 maximum: 360
@@ -165,7 +149,6 @@ Metadata {
             Parameter {
                 name: qsTr('bottomBlurHeightStart')
                 property: 'bottomBlurHeightStart'
-                isSimple: true
                 isCurve: true
                 minimum: 0
                 maximum: 90
@@ -173,7 +156,6 @@ Metadata {
             Parameter {
                 name: qsTr('bottomBlurHeightEnd')
                 property: 'bottomBlurHeightEnd'
-                isSimple: true
                 isCurve: true
                 minimum: 0
                 maximum: 90

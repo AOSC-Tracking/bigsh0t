@@ -16,7 +16,6 @@ Metadata {
             Parameter {
                 name: qsTr('hfov0')
                 property: 'hfov0'
-                isSimple: true
                 isCurve: true
                 minimum: -180
                 maximum: 180
@@ -24,7 +23,6 @@ Metadata {
             Parameter {
                 name: qsTr('hfov1')
                 property: 'hfov1'
-                isSimple: true
                 isCurve: true
                 minimum: -180
                 maximum: 180
@@ -32,7 +30,6 @@ Metadata {
             Parameter {
                 name: qsTr('vfov0')
                 property: 'vfov0'
-                isSimple: true
                 isCurve: true
                 minimum: -90
                 maximum: 90
@@ -40,7 +37,6 @@ Metadata {
             Parameter {
                 name: qsTr('vfov1')
                 property: 'vfov1'
-                isSimple: true
                 isCurve: true
                 minimum: -90
                 maximum: 90
@@ -48,7 +44,6 @@ Metadata {
             Parameter {
                 name: qsTr('blurStart')
                 property: 'blurStart'
-                isSimple: true
                 isCurve: true
                 minimum: 0.0
                 maximum: 2.0
@@ -56,7 +51,6 @@ Metadata {
             Parameter {
                 name: qsTr('blurEnd')
                 property: 'blurEnd'
-                isSimple: true
                 isCurve: true
                 minimum: 0.0
                 maximum: 2.0
