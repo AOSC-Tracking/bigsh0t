@@ -13,9 +13,6 @@ def process(filename):
             for part in line.split("$"):
                 lines.append(part)
 
-    while lines[0] == "":
-        lines = lines[1:]
-
     new_lines = []
     BLOCK_OUTDENT = "}"
     INDENT = "[{("
@@ -31,6 +28,16 @@ def process(filename):
                 current_indent += 1
             if c in OUTDENT:
                 current_indent -= 1
+
+    lines = new_lines
+    new_lines = []
+    for line in lines:
+        line = line.rstrip()
+        if line == "":
+            if len(new_lines) > 0 and new_lines[-1] != "":
+                new_lines.append(line)
+        else:
+            new_lines.append(line)
 
     lines = new_lines
 
