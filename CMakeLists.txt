@@ -18,7 +18,7 @@ set (FREI0R_HOME src/frei0r)
 set (PREPROCESSOR_COMMAND cat)
 set (QML_POSTPROCESSOR_COMMAND python ${PROJECT_SOURCE_DIR}/format_qml.py)
 set (DIST_NAME bigsh0t)
-set (DIST_VERSION 2.6)
+set (DIST_VERSION 2.7)
 set (DIST_PLATFORM unknown)
 
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "i686|x86|x86_64|AMD64")
@@ -119,6 +119,7 @@ add_custom_target(create_tar ALL
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_NAME:bigsh0t_transform_360> ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}/lib/frei0r-1
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_NAME:bigsh0t_eq_to_rect> ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}/lib/frei0r-1
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_NAME:bigsh0t_stabilize_360> ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}/lib/frei0r-1
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_NAME:bigsh0t_stabilize_360_v2> ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}/lib/frei0r-1
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_NAME:bigsh0t_zenith_correction> ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}/lib/frei0r-1
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_NAME:bigsh0t_eq_to_stereo> ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}/lib/frei0r-1
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_NAME:bigsh0t_eq_cap> ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}/lib/frei0r-1
@@ -134,6 +135,7 @@ build_plugin(bigsh0t_transform_360 Transform360.cpp)
 build_plugin(bigsh0t_rect_to_eq RectToEq.cpp)
 build_plugin(bigsh0t_eq_to_rect EqToRect.cpp)
 build_plugin(bigsh0t_stabilize_360 Stabilize360.cpp)
+build_plugin(bigsh0t_stabilize_360_v2 Stabilize360v2.cpp)
 build_plugin(bigsh0t_zenith_correction ZenithCorrection.cpp)
 build_plugin(bigsh0t_eq_to_stereo EqToStereo.cpp)
 build_plugin(bigsh0t_eq_cap EqCap.cpp)

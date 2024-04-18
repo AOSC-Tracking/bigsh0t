@@ -247,6 +247,18 @@ inline uint32_t blerp(const uint32_t* frame, int ai, int bi, int ci, int di, int
 #endif
 }
 
+inline uint32_t blerpMono(const uint32_t* frame, int ai, int bi, int ci, int di, int ax, int ay, int width, int height) {
+    uint32_t a = frame[ai];
+    uint32_t b = frame[bi];
+    uint32_t c = frame[ci];
+    uint32_t d = frame[di];
+    uint32_t e = a + (((b - a) * ax) >> 7);
+    uint32_t f = c + (((d - c) * ax) >> 7);
+
+    uint32_t g = e + (((f - e) * ay) >> 7);
+    return g;
+}
+
 uint32_t sampleBilinear (const uint32_t* frame, double x, double y, int width, int height) {
     int ix0 = (int) x;
     int iy0 = (int) y;
@@ -293,6 +305,26 @@ uint32_t sampleBilinearWrappedClamped (const uint32_t* frame, double x, double y
 }
 
 
+uint32_t sampleBilinearWrappedClampedMono (const uint32_t* frame, double x, double y, int width, int height) {
+    int ix0 = (int) x;
+    int iy0 = (int) y;
+    int ix1 = ix0 + 1;
+    int iy1 = iy0 + 1;
+    int ax = (int) ((x - ix0) * 128);
+    int ay = (int) ((y - iy0) * 128);
+
+    ix0 = WRAP_ANY(ix0, width);
+    ix1 = WRAP_ANY(ix1, width);
+    int hm1 = height - 1;
+    iy0 = CLAMP_ANY(iy0, 0, hm1);
+    iy1 = CLAMP_ANY(iy1, 0, hm1);
+
+    int iy0w = iy0 * width;
+    int iy1w = iy1 * width;
+
+    return blerpMono(frame, iy0w + ix0, iy0w + ix1, iy1w + ix0, iy1w + ix1, ax, ay, width, height);
+}
+
 template<int interpolation>
 void apply_360_map_tmpl(uint32_t* out, uint32_t* ibuf1, float* map, int width, int height, int start_scanline, int num_scanlines) {
     for (int yi = start_scanline; yi < start_scanline + num_scanlines; yi++) {
@@ -315,6 +347,9 @@ void apply_360_map_tmpl(uint32_t* out, uint32_t* ibuf1, float* map, int width, i
             case Interpolation::BILINEAR:
                 pixel = sampleBilinearWrappedClamped(ibuf1, xt, yt, width, height);
                 break;
+            case Interpolation::MONO_BILINEAR:
+                pixel = sampleBilinearWrappedClampedMono(ibuf1, xt, yt, width, height);
+                break;
             }
             out[idx] = pixel;
         }
@@ -329,6 +364,7 @@ void apply_360_map(uint32_t* out, uint32_t* ibuf1, float* map, int width, int he
     case Interpolation::BILINEAR:
         apply_360_map_tmpl<Interpolation::BILINEAR>(out, ibuf1, map, width, height, start_scanline, num_scanlines);
         break;
+
     }
 }
 
@@ -388,6 +424,9 @@ void transform_360_tmpl(const Transform360Support& t360, uint32_t* out, uint32_t
             case Interpolation::BILINEAR:
                 pixel = sampleBilinearWrappedClamped(ibuf1, xt, yt, width, height);
                 break;
+            case Interpolation::MONO_BILINEAR:
+                pixel = sampleBilinearWrappedClampedMono(ibuf1, xt, yt, width, height);
+                break;
             }
             out[yi * width + xi] = pixel;
         }
@@ -413,6 +452,9 @@ void transform_360(const Transform360Support& t360, uint32_t* out, uint32_t* ibu
     case Interpolation::BILINEAR:
         transform_360_tmpl<Interpolation::BILINEAR>(t360, out, ibuf1, width, height, start_scanline, num_scanlines, xform);
         break;
+    case Interpolation::MONO_BILINEAR:
+        transform_360_tmpl<Interpolation::MONO_BILINEAR>(t360, out, ibuf1, width, height, start_scanline, num_scanlines, xform);
+        break;
     }
 }
 
@@ -423,6 +465,9 @@ void transform_360(const Transform360Support& t360, uint32_t* out, uint32_t* ibu
         break;
     case Interpolation::BILINEAR:
         transform_360_tmpl<Interpolation::BILINEAR>(t360, out, ibuf1, width, height, start_scanline, num_scanlines, xform);
+        break;
+    case Interpolation::MONO_BILINEAR:
+        transform_360_tmpl<Interpolation::MONO_BILINEAR>(t360, out, ibuf1, width, height, start_scanline, num_scanlines, xform);
         break;
     }
 }

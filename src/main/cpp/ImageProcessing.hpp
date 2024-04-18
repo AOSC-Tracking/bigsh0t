@@ -8,7 +8,8 @@
 
 enum Interpolation {
     NONE = 0,
-    BILINEAR = 1
+    BILINEAR = 1,
+    MONO_BILINEAR = 2
 };
 
 class Transform360Support {
@@ -28,6 +29,7 @@ inline uint32_t sampleNearestNeighbor (const uint32_t* frame, double x, double y
 
 uint32_t sampleBilinear (const uint32_t* frame, double x, double y, int width, int height);
 uint32_t sampleBilinearWrappedClamped (const uint32_t* frame, double x, double y, int width, int height);
+uint32_t sampleBilinearMonoWrappedClamped (const uint32_t* frame, double x, double y, int width, int height);
 #ifdef USE_SSE
 uint32_t sseBlerp(const uint32_t* frame, int ai, int bi, int ci, int di, int ax, int ay, int width, int height);
 #endif
