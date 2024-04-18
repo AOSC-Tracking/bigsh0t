@@ -10,7 +10,6 @@ Item {
     property int interpolationValue: 0
     property int subpixelsValue: 0
     property bool analyzeValue: false
-    property bool transformWhenAnalyzingValue: false
     property double maxStepValue: 0
     property string analysisFileValue: ""
     property double stabilizeYawValue: 0
@@ -28,7 +27,6 @@ Item {
         var position = getPosition();
         blockUpdate = true;
         analyzeCheckBox.checked = filter.get("analyze") == '1';
-        transformWhenAnalyzingCheckBox.checked = filter.get("transformWhenAnalyzing") == '1';
         interpolationComboBox.currentIndex = filter.get("interpolation");
         subpixelsComboBox.currentIndex = filter.get("subpixels");
         maxStepSlider.value = filter.getDouble("maxStep");
@@ -51,13 +49,6 @@ Item {
             return;
         var value = analyzeCheckBox.checked;
         filter.set("analyze", value);
-    }
-
-    function updateProperty_transformWhenAnalyzing() {
-        if (blockUpdate)
-            return;
-        var value = transformWhenAnalyzingCheckBox.checked;
-        filter.set("transformWhenAnalyzing", value);
     }
 
     function updateProperty_interpolation() {
@@ -190,10 +181,6 @@ Item {
             filter.set("analyze", false);
         else
             analyzeValue = filter.get("analyze");
-        if (filter.isNew)
-            filter.set("transformWhenAnalyzing", true);
-        else
-            transformWhenAnalyzingValue = filter.get("transformWhenAnalyzing");
         if (filter.isNew)
             filter.set("interpolation", 1);
         else
@@ -408,17 +395,6 @@ Item {
             text: qsTr('Analysis')
             Layout.alignment: Qt.AlignLeft
             Layout.columnSpan: 4
-        }
-
-        Label {
-        }
-
-        CheckBox {
-            id: transformWhenAnalyzingCheckBox
-
-            text: qsTr('Apply transform')
-            Layout.columnSpan: 3
-            onCheckedChanged: updateProperty_transformWhenAnalyzing()
         }
 
         Label {

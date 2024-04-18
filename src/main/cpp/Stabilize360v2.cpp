@@ -423,7 +423,6 @@ class Stabilize360v2 : public Frei0rFilter, MPFilter {
   public:
     Frei0rParameter<int,double> interpolation;
     bool analyze;
-    bool transformWhenAnalyzing;
 
     Frei0rParameter<int,double> maxStep;
     Frei0rParameter<int,double> subpixels;
@@ -459,7 +458,6 @@ class Stabilize360v2 : public Frei0rFilter, MPFilter {
         previousFrame = NULL;
         previousFrameTime = -1;
         analyze = false;
-        transformWhenAnalyzing = true;
 
         yaw = 0;
         pitch = 0;
@@ -493,8 +491,6 @@ class Stabilize360v2 : public Frei0rFilter, MPFilter {
         register_fparam(timeBiasYaw, "timeBiasYaw", "");
         register_fparam(timeBiasPitch, "timeBiasPitch", "");
         register_fparam(timeBiasRoll, "timeBiasRoll", "");
-
-        register_param(transformWhenAnalyzing, "transformWhenAnalyzing", "");
     }
 
     virtual ~Stabilize360v2() {
@@ -608,11 +604,7 @@ class Stabilize360v2 : public Frei0rFilter, MPFilter {
                 view (0, 0, 0);
             }
 
-            if (transformWhenAnalyzing) {
-                MPFilter::updateMP(this, time, out, intermediateFrame, width, height);
-            } else {
-                memcpy (out, intermediateFrame, width * height * sizeof(uint32_t));
-            }
+            memcpy (out, intermediateFrame, width * height * sizeof(uint32_t));
 
             Graphics postXform (out, width, height);
 
