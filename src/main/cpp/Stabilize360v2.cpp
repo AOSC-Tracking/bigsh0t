@@ -572,6 +572,49 @@ class Stabilize360v2 : public Frei0rFilter, MPFilter {
         return (a * aw + b * bw + c * cw) / (aw + bw + cw);
     }
 
+    void shrink(const uint32_t* in, uint32_t* out, int scaleFactor, int reducedWidth, int reducedHeight) {
+        const uint8_t* rp = (const uint8_t*) in;
+        int hScaleFactor = scaleFactor * 4;
+        int vWrites = 0;
+        uint32_t* wp0 = out;
+        for (int y = 0; y < height; ++y) {
+            if (vWrites == scaleFactor) {
+                vWrites = 0;
+                wp0 += reducedWidth;
+            }
+            uint32_t* wp = wp0;
+            int hWrites = 0;
+            for (int x = 0; x < width * 4; ++x) {
+                if (hWrites == hScaleFactor) {
+                    hWrites = 0;
+                    ++wp;
+                }
+                *wp += *rp;
+                ++rp;
+                ++hWrites;
+            }
+            ++vWrites;
+        }
+    }
+
+    uint64_t diff(const uint32_t* a, const uint32_t* b, int width, int height, uint64_t exitAt) {
+        const uint32_t* ap = a;
+        const uint32_t* bp = b;
+        uint64_t res = 0;
+        for (int y = 0; y < height; ++y) {
+            for (int x = 0; x < width; ++x) {
+                int64_t av = *ap++;
+                int64_t bv = *bp++;
+                int64_t d = abs(av - bv);
+                res += d;
+            }
+            if (res > exitAt) {
+                return res;
+            }
+        }
+        return res;
+    }
+
     virtual void update(double time, uint32_t* out, const uint32_t* in) {
         // frei0r filter instances are not thread-safe. Shotcut ignores that, so we'll
         // deal with it by wrapping the execution in a mutex
@@ -584,28 +627,70 @@ class Stabilize360v2 : public Frei0rFilter, MPFilter {
         if (analyze) {
             int numSubpixels = 1 << subpixels;
 
-            uint32_t* intermediateFrame = (uint32_t*) malloc(width * height * sizeof(uint32_t));
-            memcpy (intermediateFrame, in, width * height * sizeof(uint32_t));
+            int scaleFactor = height / 128;
+            int reducedHeight = height / scaleFactor;
+            int reducedWidth = width / scaleFactor;
 
-            Graphics preXform (intermediateFrame, width, height);
+            uint32_t* reducedFrame = (uint32_t*) calloc(reducedWidth * reducedHeight, sizeof(uint32_t));
+            shrink(in, reducedFrame, scaleFactor, reducedWidth, reducedHeight);
 
             bool updated = false;
             if (previousFrame != NULL && previousFrameTime < clipTime) {
                 updated = true;
 
-                double dYaw = 0.0;
-                double dPitch = 0.0;
-                double dRoll = 0.0;
+                double dy = 0.0;
+                double dp = 0.0;
+                double dr = 0.0;
 
-                view (-dYaw, -dPitch, -dRoll);
+                double degreesPerPixel = 360.0 / width;
+                double minStep = degreesPerPixel / numSubpixels;
+                double step = maxStep;
 
-                rawSamples.add (Rotation(previousFrameTime + ROTATION_TIME_INSTANT, clipTime, dYaw, dPitch, dRoll, true));
+                int64_t best = diff(previousFrame, reducedFrame, reducedWidth, reducedHeight, INT64_MAX);
+
+                uint32_t* workFrame = (uint32_t*) calloc(reducedWidth * reducedHeight, sizeof(uint32_t));
+
+                Transform360Support t360support (reducedWidth, reducedHeight);
+
+                while (step >= minStep) {
+                    int bys = 0;
+                    int bps = 0;
+                    int brs = 0;
+                    for (int ys = -1; ys <= 1; ++ys) {
+                        for (int ps = -1; ps <= 1; ++ps) {
+                            for (int rs = -1; rs <= 1; ++rs) {
+                                if (ys != 0 || ps != 0 || rs != 0) {
+                                    transform_360(t360support, workFrame, reducedFrame, reducedWidth, reducedHeight, 0, reducedHeight,
+                                        dy + ys * step, dp + ps * step, dr + rs * step,
+                                        Interpolation::MONO_BILINEAR);
+                                    int64_t score = diff(previousFrame, workFrame, reducedWidth, reducedHeight, best);
+                                    if (score < best) {
+                                        best = score;
+                                        bys = ys;
+                                        bps = ps;
+                                        brs = rs;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    dy += bys * step;
+                    dp += bps * step;
+                    dr += brs * step;
+
+                    step *= 0.5;
+                }
+
+                free(workFrame);
+
+                view (dy, dp, dr);
+
+                rawSamples.add (Rotation(previousFrameTime + ROTATION_TIME_INSTANT, clipTime, dy, dp, dr, true));
             } else {
                 view (0, 0, 0);
             }
 
-            memcpy (out, intermediateFrame, width * height * sizeof(uint32_t));
-
+            memccpy(out, in, width * height, sizeof(uint32_t));
             Graphics postXform (out, width, height);
 
             unsigned int diagramWidth = 512;
@@ -641,13 +726,12 @@ class Stabilize360v2 : public Frei0rFilter, MPFilter {
 
             postXform.drawText(8, 8, status, 0, 0xff0000ff);
 
-            free (intermediateFrame);
-
             previousFrameTime = clipTime;
             if (previousFrame == NULL) {
-                previousFrame = (uint32_t*) malloc(width * height * sizeof(uint32_t));
+                previousFrame = (uint32_t*) malloc(reducedWidth * reducedHeight * sizeof(uint32_t));
             }
-            memcpy (previousFrame, in, width * height * sizeof(uint32_t));
+            memcpy (previousFrame, reducedFrame, reducedWidth * reducedHeight * sizeof(uint32_t));
+            free(reducedFrame);
         } else {
             if (smoothYaw.changed() || smoothPitch.changed() || smoothRoll.changed() ||
                     timeBiasYaw.changed() || timeBiasPitch.changed() || timeBiasRoll.changed()) {
