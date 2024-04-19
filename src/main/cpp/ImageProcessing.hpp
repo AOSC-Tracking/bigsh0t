@@ -29,7 +29,7 @@ inline uint32_t sampleNearestNeighbor (const uint32_t* frame, double x, double y
 
 uint32_t sampleBilinear (const uint32_t* frame, double x, double y, int width, int height);
 uint32_t sampleBilinearWrappedClamped (const uint32_t* frame, double x, double y, int width, int height);
-uint32_t sampleBilinearMonoWrappedClamped (const uint32_t* frame, double x, double y, int width, int height);
+uint32_t sampleBilinearWrappedClampedMono (const uint32_t* frame, double x, double y, int width, int height);
 #ifdef USE_SSE
 uint32_t sseBlerp(const uint32_t* frame, int ai, int bi, int ci, int di, int ax, int ay, int width, int height);
 #endif
@@ -44,7 +44,7 @@ void transform_360(const Transform360Support& t360, uint32_t* out, uint32_t* ibu
 void transform_360(const Transform360Support& t360, uint32_t* out, uint32_t* ibuf1, int width, int height, int start_scanline, int num_scanlines, const Matrix3& xform, int interpolation);
 void transform_360_map(const Transform360Support& t360, float* out, int width, int height, int start_scanline, int num_scanlines, double yaw, double pitch, double roll);
 void apply_360_map(uint32_t* out, uint32_t* ibuf1, float* map, int width, int height, int start_scanline, int num_scanlines, int interpolation);
-
-
+void shrinkAndAccumulate(const uint32_t* in, uint32_t* out, int width, int height, int scaleFactor, int reducedWidth, int reducedHeight);
+uint64_t diff(const uint32_t* a, const uint32_t* b, int width, int height, uint64_t exitAt);
 
 #endif

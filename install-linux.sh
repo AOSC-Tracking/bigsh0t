@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION=2.6
+VERSION=2.7
 
 if [ "$1" == "" ] ; then
     echo "Usage: ./install-linux.sh <path to Shotcut.app>"

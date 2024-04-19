@@ -4,6 +4,7 @@ project (bigsh0t)
 set (CPP_SOURCE src/main/cpp)
 set (CPP_TEST_SOURCE src/test/cpp)
 set (COMMON_FILES
+    ${CPP_SOURCE}/Debug.cpp
     ${CPP_SOURCE}/EMoR.cpp
     ${CPP_SOURCE}/Matrix.cpp
     ${CPP_SOURCE}/MPFilter.cpp

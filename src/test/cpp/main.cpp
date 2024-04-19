@@ -349,6 +349,54 @@ void testEMoR() {
     }
 }
 
+void testShrinkAndAccumulate() {
+    uint32_t in[] = {
+         0,  1,  2,  3,  4,  5,  6,  7,
+         5,  6,  7,  8,  9, 10, 11, 12,
+        10, 11, 12, 13, 14, 15, 16, 17,
+        15, 16, 17, 18, 19, 20, 21, 22
+    };
+    uint32_t out[] {
+        0, 0, 0, 0,
+        0, 0, 0, 0, 1
+    };
+    uint32_t expected[] {
+        0+1+5+6, 2+3+7+8, 4+5+9+10, 6+7+11+12,
+        10+11+15+16, 12+13+17+18, 14+15+19+20, 16+17+21+22
+    };
+    shrinkAndAccumulate(in, out, 8, 4, 2, 4, 2);
+    for (int i = 0; i < 8; ++i) {
+        assertEquals(out[i], expected[i]);
+    }
+    assertEquals(out[8], (uint32_t) 1);
+}
+
+void testSampleBilinearWrappedClampedMono() {
+    uint32_t in[] = {
+        0, 100,
+        200, 300
+    };
+
+    auto sample = sampleBilinearWrappedClampedMono(in, 0.5, 0.5, 2, 2);
+    assertEquals(sample, (uint32_t) 150);
+}
+
+void testDiff() {
+    uint32_t a[] = {
+        0, 100,
+        200, 300
+    };
+    uint32_t b[] = {
+        0, 0,
+        0, 0
+    };
+
+    auto d1 = diff(a, b, 2, 2, INT64_MAX);
+    auto d2 = diff(b, a, 2, 2, INT64_MAX);
+    assertEquals((uint64_t) (100 + 200 + 300), d1);
+    assertEquals((uint64_t) (100 + 200 + 300), d2);
+}
+
 typedef void (*TestCase)();
 
 void runTest(const char* name, TestCase testCase) {
@@ -365,7 +413,10 @@ void runTest(const char* name, TestCase testCase) {
 #define RUN_TEST(F) runTest(#F, F)
 
 int main(int argc, char* argv[]) {
-    RUN_TEST(testEMoR);
+    RUN_TEST(testDiff);
+    RUN_TEST(testSampleBilinearWrappedClampedMono);
+    //RUN_TEST(testShrinkAndAccumulate);
+    //RUN_TEST(testEMoR);
     //RUN_TEST(testSummedAreaTable);
     //RUN_TEST(testBlerp);
     //RUN_TEST(testFastAtan2);

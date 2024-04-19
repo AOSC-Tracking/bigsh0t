@@ -248,14 +248,14 @@ inline uint32_t blerp(const uint32_t* frame, int ai, int bi, int ci, int di, int
 }
 
 inline uint32_t blerpMono(const uint32_t* frame, int ai, int bi, int ci, int di, int ax, int ay, int width, int height) {
-    uint32_t a = frame[ai];
-    uint32_t b = frame[bi];
-    uint32_t c = frame[ci];
-    uint32_t d = frame[di];
-    uint32_t e = a + (((b - a) * ax) >> 7);
-    uint32_t f = c + (((d - c) * ax) >> 7);
+    uint64_t a = frame[ai];
+    uint64_t b = frame[bi];
+    uint64_t c = frame[ci];
+    uint64_t d = frame[di];
+    uint64_t e = a + (((b - a) * ax) >> 7);
+    uint64_t f = c + (((d - c) * ax) >> 7);
 
-    uint32_t g = e + (((f - e) * ay) >> 7);
+    uint64_t g = e + (((f - e) * ay) >> 7);
     return g;
 }
 
@@ -559,4 +559,54 @@ Transform360Support::~Transform360Support() {
     delete[] sin_theta;
     delete[] cos_phi;
     delete[] sin_phi;
+}
+
+void shrinkAndAccumulate(const uint32_t* in, uint32_t* out, int width, int height, int scaleFactor, int reducedWidth, int reducedHeight) {
+    memset(out, 0, reducedWidth * reducedHeight * sizeof(uint32_t));
+    const uint8_t* rp = (const uint8_t*) in;
+    int hScaleFactor = scaleFactor * 4;
+    int vWrites = 0;
+    uint32_t* wp0 = out;
+    for (int y = 0; y < height; ++y) {
+        if (vWrites == scaleFactor) {
+            vWrites = 0;
+            wp0 += reducedWidth;
+        }
+        uint32_t* wp = wp0;
+        int hWrites = 0;
+        for (int x = 0; x < width * 4; ++x) {
+            if (hWrites == hScaleFactor) {
+                hWrites = 0;
+                ++wp;
+            }
+            *wp += *rp;
+            ++rp;
+            ++hWrites;
+        }
+        ++vWrites;
+    }
+
+    uint32_t* p = out;
+    for (int i = 0; i < reducedWidth * reducedHeight; ++i) {
+        *p = *p >> 8;
+        ++p;
+    }
+}
+
+uint64_t diff(const uint32_t* a, const uint32_t* b, int width, int height, uint64_t exitAt) {
+    const uint32_t* ap = a;
+    const uint32_t* bp = b;
+    uint64_t res = 0;
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            uint32_t av = *ap++;
+            uint32_t bv = *bp++;
+            uint32_t d = av > bv ? av - bv : bv - av;
+            res += d;
+        }
+        if (res > exitAt) {
+            return res;
+        }
+    }
+    return res;
 }

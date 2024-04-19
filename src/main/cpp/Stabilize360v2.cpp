@@ -17,6 +17,7 @@
 #include "Frei0rFilter.hpp"
 #include "omp_compat.h"
 #include "Version.hpp"
+#include "Debug.hpp"
 
 #define ROTATION_TIME_INSTANT (1.0 / 10000.0)
 
@@ -420,6 +421,16 @@ class Stabilize360v2 : public Frei0rFilter, MPFilter {
     std::mutex lock;
     Transform360Support t360;
 
+    uint32_t* previousFrame;
+    double previousFrameTime;
+
+    uint32_t* currentFrame;
+    uint32_t* proposalFrame;
+
+    int reducedWidth;
+    int reducedHeight;
+    int reducedScale;
+
   public:
     Frei0rParameter<int,double> interpolation;
     bool analyze;
@@ -442,10 +453,6 @@ class Stabilize360v2 : public Frei0rFilter, MPFilter {
     std::string analysisFile;
     Frei0rParameter<double,double> clipOffset;
 
-    uint32_t* previousFrame;
-    double previousFrameTime;
-
-
     Stabilize360v2(unsigned int width, unsigned int height) : Frei0rFilter(width, height), t360(width, height) {
         initializedAnalyzeState = false;
         previousAnalyzeState = false;
@@ -458,6 +465,15 @@ class Stabilize360v2 : public Frei0rFilter, MPFilter {
         previousFrame = NULL;
         previousFrameTime = -1;
         analyze = false;
+
+        reducedScale = height / 128;
+        if (reducedScale < 1) {
+            reducedScale = 1;
+        }
+        reducedHeight = height / reducedScale;
+        reducedWidth = width / reducedScale;
+        currentFrame = (uint32_t*) malloc(reducedWidth * reducedHeight * sizeof(uint32_t));
+        proposalFrame = (uint32_t*) malloc(reducedWidth * reducedHeight * sizeof(uint32_t));
 
         yaw = 0;
         pitch = 0;
@@ -504,6 +520,8 @@ class Stabilize360v2 : public Frei0rFilter, MPFilter {
             free(previousFrame);
             previousFrame = NULL;
         }
+        free(currentFrame);
+        free(proposalFrame);
     }
 
     void updateAnalyzeState(double time,
@@ -564,62 +582,18 @@ class Stabilize360v2 : public Frei0rFilter, MPFilter {
     virtual void endApply() {
     }
 
-    double weighted (double a, double aw, double b, double bw) {
-        return (a * aw + b * bw) / (aw + bw);
-    }
-
-    double weighted (double a, double aw, double b, double bw, double c, double cw) {
-        return (a * aw + b * bw + c * cw) / (aw + bw + cw);
-    }
-
-    void shrink(const uint32_t* in, uint32_t* out, int scaleFactor, int reducedWidth, int reducedHeight) {
-        const uint8_t* rp = (const uint8_t*) in;
-        int hScaleFactor = scaleFactor * 4;
-        int vWrites = 0;
-        uint32_t* wp0 = out;
-        for (int y = 0; y < height; ++y) {
-            if (vWrites == scaleFactor) {
-                vWrites = 0;
-                wp0 += reducedWidth;
-            }
-            uint32_t* wp = wp0;
-            int hWrites = 0;
-            for (int x = 0; x < width * 4; ++x) {
-                if (hWrites == hScaleFactor) {
-                    hWrites = 0;
-                    ++wp;
-                }
-                *wp += *rp;
-                ++rp;
-                ++hWrites;
-            }
-            ++vWrites;
-        }
-    }
-
-    uint64_t diff(const uint32_t* a, const uint32_t* b, int width, int height, uint64_t exitAt) {
-        const uint32_t* ap = a;
-        const uint32_t* bp = b;
-        uint64_t res = 0;
-        for (int y = 0; y < height; ++y) {
-            for (int x = 0; x < width; ++x) {
-                int64_t av = *ap++;
-                int64_t bv = *bp++;
-                int64_t d = abs(av - bv);
-                res += d;
-            }
-            if (res > exitAt) {
-                return res;
+    void blt(const uint32_t* in, uint32_t* out, int x0, int y0, int inWidth, int inHeight) {
+        for (int x = 0; x < inWidth; ++x) {
+            for (int y = 0; y < inHeight; ++y) {
+                out[(y + y0) * width + (x + x0)] = in[y * inWidth + x];
             }
         }
-        return res;
     }
 
     virtual void update(double time, uint32_t* out, const uint32_t* in) {
         // frei0r filter instances are not thread-safe. Shotcut ignores that, so we'll
         // deal with it by wrapping the execution in a mutex
         std::lock_guard<std::mutex> guard(lock);
-
         double clipTime = time + clipOffset;
 
         updateAnalyzeState (clipTime, out, in);
@@ -627,12 +601,9 @@ class Stabilize360v2 : public Frei0rFilter, MPFilter {
         if (analyze) {
             int numSubpixels = 1 << subpixels;
 
-            int scaleFactor = height / 128;
-            int reducedHeight = height / scaleFactor;
-            int reducedWidth = width / scaleFactor;
+            shrinkAndAccumulate(in, currentFrame, width, height, reducedScale, reducedWidth, reducedHeight);
 
-            uint32_t* reducedFrame = (uint32_t*) calloc(reducedWidth * reducedHeight, sizeof(uint32_t));
-            shrink(in, reducedFrame, scaleFactor, reducedWidth, reducedHeight);
+            memcpy(out, in, width * height * sizeof(uint32_t));
 
             bool updated = false;
             if (previousFrame != NULL && previousFrameTime < clipTime) {
@@ -646,9 +617,7 @@ class Stabilize360v2 : public Frei0rFilter, MPFilter {
                 double minStep = degreesPerPixel / numSubpixels;
                 double step = maxStep;
 
-                int64_t best = diff(previousFrame, reducedFrame, reducedWidth, reducedHeight, INT64_MAX);
-
-                uint32_t* workFrame = (uint32_t*) calloc(reducedWidth * reducedHeight, sizeof(uint32_t));
+                int64_t best = diff(previousFrame, currentFrame, reducedWidth, reducedHeight, INT64_MAX);
 
                 Transform360Support t360support (reducedWidth, reducedHeight);
 
@@ -660,10 +629,13 @@ class Stabilize360v2 : public Frei0rFilter, MPFilter {
                         for (int ps = -1; ps <= 1; ++ps) {
                             for (int rs = -1; rs <= 1; ++rs) {
                                 if (ys != 0 || ps != 0 || rs != 0) {
-                                    transform_360(t360support, workFrame, reducedFrame, reducedWidth, reducedHeight, 0, reducedHeight,
-                                        dy + ys * step, dp + ps * step, dr + rs * step,
+                                    double py = dy + ys * step;
+                                    double pp = dp + ps * step;
+                                    double pr = dr + rs * step;
+                                    transform_360(t360support, proposalFrame, currentFrame, reducedWidth, reducedHeight, 0, reducedHeight,
+                                        py, pp, pr,
                                         Interpolation::MONO_BILINEAR);
-                                    int64_t score = diff(previousFrame, workFrame, reducedWidth, reducedHeight, best);
+                                    int64_t score = diff(previousFrame, proposalFrame, reducedWidth, reducedHeight, best);
                                     if (score < best) {
                                         best = score;
                                         bys = ys;
@@ -681,8 +653,6 @@ class Stabilize360v2 : public Frei0rFilter, MPFilter {
                     step *= 0.5;
                 }
 
-                free(workFrame);
-
                 view (dy, dp, dr);
 
                 rawSamples.add (Rotation(previousFrameTime + ROTATION_TIME_INSTANT, clipTime, dy, dp, dr, true));
@@ -690,7 +660,6 @@ class Stabilize360v2 : public Frei0rFilter, MPFilter {
                 view (0, 0, 0);
             }
 
-            memccpy(out, in, width * height, sizeof(uint32_t));
             Graphics postXform (out, width, height);
 
             unsigned int diagramWidth = 512;
@@ -716,10 +685,10 @@ class Stabilize360v2 : public Frei0rFilter, MPFilter {
             }
             snprintf (buf, 1024,
                       "%s\n"
-                      "At %.2fs (%.2fs) %zd frames, from %.2f s to %.2f s\n"
+                      "At %.3fs -> %.3fs (%.2fs) %zd frames, from %.2f s to %.2f s\n"
                       "%s\n"
                       "Last frame motion: (%.3f, %.3f, %.3f)", analysisFile.c_str(),
-                      clipTime, time,
+                      previousFrameTime, clipTime, time,
                       frames, earliest, latest, skipBuf,
                       yaw, pitch, roll);
             std::string status(buf);
@@ -730,8 +699,7 @@ class Stabilize360v2 : public Frei0rFilter, MPFilter {
             if (previousFrame == NULL) {
                 previousFrame = (uint32_t*) malloc(reducedWidth * reducedHeight * sizeof(uint32_t));
             }
-            memcpy (previousFrame, reducedFrame, reducedWidth * reducedHeight * sizeof(uint32_t));
-            free(reducedFrame);
+            memcpy(previousFrame, currentFrame, reducedWidth * reducedHeight * sizeof(uint32_t));
         } else {
             if (smoothYaw.changed() || smoothPitch.changed() || smoothRoll.changed() ||
                     timeBiasYaw.changed() || timeBiasPitch.changed() || timeBiasRoll.changed()) {
@@ -742,9 +710,9 @@ class Stabilize360v2 : public Frei0rFilter, MPFilter {
             if (correctionIndex >= 0) {
                 Rotation correction = corrections[correctionIndex];
                 view (
-                    correction.yaw * stabilizeYaw / 100.0,
-                    correction.pitch * stabilizePitch / 100.0,
-                    correction.roll * stabilizeRoll / 100.0
+                    -correction.yaw * stabilizeYaw / 100.0,
+                    -correction.pitch * stabilizePitch / 100.0,
+                    -correction.roll * stabilizeRoll / 100.0
                 );
 
                 MPFilter::updateMP(this, time, out, in, width, height);
@@ -775,6 +743,6 @@ class Stabilize360v2 : public Frei0rFilter, MPFilter {
 };
 
 frei0r::construct<Stabilize360v2> plugin("bigsh0t_stabilize_360_v2",
-                                       "Stabilizes 360 equirectangular footage.",
-                                       "Leo Sutic <leo@sutic.nu>",
-                                       BIGSH0T_VERSION_MAJOR, BIGSH0T_VERSION_MINOR, F0R_COLOR_MODEL_PACKED32);
+                                         "Stabilizes 360 equirectangular footage.",
+                                         "Leo Sutic <leo@sutic.nu>",
+                                         BIGSH0T_VERSION_MAJOR, BIGSH0T_VERSION_MINOR, F0R_COLOR_MODEL_PACKED32);
