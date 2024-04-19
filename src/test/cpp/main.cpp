@@ -393,8 +393,8 @@ void testDiff() {
 
     auto d1 = diff(a, b, 2, 2, INT64_MAX);
     auto d2 = diff(b, a, 2, 2, INT64_MAX);
-    assertEquals((uint64_t) (100 + 200 + 300), d1);
-    assertEquals((uint64_t) (100 + 200 + 300), d2);
+    assertEquals(d1, (uint64_t) (100 + 200 + 300));
+    assertEquals(d2, (uint64_t) (100 + 200 + 300));
 }
 
 typedef void (*TestCase)();

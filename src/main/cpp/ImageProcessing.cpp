@@ -586,9 +586,15 @@ void shrinkAndAccumulate(const uint32_t* in, uint32_t* out, int width, int heigh
         ++vWrites;
     }
 
+    uint32_t max = scaleFactor * scaleFactor * 4 * 256;
+
+    int shift = 0;
+    while ((max >> shift) > 32767) {
+        ++shift;
+    }
     uint32_t* p = out;
     for (int i = 0; i < reducedWidth * reducedHeight; ++i) {
-        *p = *p >> 8;
+        *p = *p >> shift;
         ++p;
     }
 }
@@ -599,9 +605,12 @@ uint64_t diff(const uint32_t* a, const uint32_t* b, int width, int height, uint6
     uint64_t res = 0;
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
-            uint32_t av = *ap++;
-            uint32_t bv = *bp++;
-            uint32_t d = av > bv ? av - bv : bv - av;
+            int32_t av = *ap++;
+            int32_t bv = *bp++;
+            int32_t d = av - bv;
+            uint32_t temp = d >> 31;     // make a mask of the sign bit
+            d ^= temp;                   // toggle the bits if value is negative
+            d += temp & 1;               // add one if value was negative
             res += d;
         }
         if (res > exitAt) {

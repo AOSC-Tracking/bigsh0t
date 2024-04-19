@@ -415,6 +415,7 @@ class Stabilize360v2 : public Frei0rFilter, MPFilter {
     double pitch;
     double roll;
 
+    std::string rawSamplesFrom;
     RotationSamples rawSamples;
     RotationSamples corrections;
 
@@ -569,6 +570,7 @@ class Stabilize360v2 : public Frei0rFilter, MPFilter {
     virtual void beginApply(double time, uint32_t* out, const uint32_t* in) {
         rawSamples.clear ();
         if (!analysisFile.empty()) {
+            rawSamplesFrom = analysisFile;
             rawSamples.read (analysisFile);
         }
         updateCorrections();
@@ -701,6 +703,9 @@ class Stabilize360v2 : public Frei0rFilter, MPFilter {
             }
             memcpy(previousFrame, currentFrame, reducedWidth * reducedHeight * sizeof(uint32_t));
         } else {
+            if (!analysisFile.empty() && rawSamplesFrom != analysisFile) {
+                beginApply(time, out, in);
+            }
             if (smoothYaw.changed() || smoothPitch.changed() || smoothRoll.changed() ||
                     timeBiasYaw.changed() || timeBiasPitch.changed() || timeBiasRoll.changed()) {
                 updateCorrections();
