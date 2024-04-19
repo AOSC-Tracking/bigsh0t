@@ -4,7 +4,6 @@
 #include <fstream>
 
 void logInfo(const std::string& message);
-void logInfoDouble(const std::string& message, double v);
 
 template<typename T>
 void logInfoValue(const std::string& message, T v) {

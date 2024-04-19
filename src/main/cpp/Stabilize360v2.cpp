@@ -376,7 +376,7 @@ class RotationSamples {
             Rotation& measured = accs[i];
             Rotation& smoothed = smooths[i];
 
-            Rotation correction (measured.previousTime, measured.time, smoothed.yaw - measured.yaw, smoothed.pitch - measured.pitch, smoothed.roll - measured.roll, false);
+            Rotation correction (measured.previousTime, measured.time, measured.yaw - smoothed.yaw, measured.pitch - smoothed.pitch, measured.roll - smoothed.roll, false);
             dest.add(correction);
         }
     }
@@ -710,9 +710,9 @@ class Stabilize360v2 : public Frei0rFilter, MPFilter {
             if (correctionIndex >= 0) {
                 Rotation correction = corrections[correctionIndex];
                 view (
-                    -correction.yaw * stabilizeYaw / 100.0,
-                    -correction.pitch * stabilizePitch / 100.0,
-                    -correction.roll * stabilizeRoll / 100.0
+                    correction.yaw * stabilizeYaw / 100.0,
+                    correction.pitch * stabilizePitch / 100.0,
+                    correction.roll * stabilizeRoll / 100.0
                 );
 
                 MPFilter::updateMP(this, time, out, in, width, height);
