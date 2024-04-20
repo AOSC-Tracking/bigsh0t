@@ -435,6 +435,7 @@ class Stabilize360v2 : public Frei0rFilter, MPFilter {
   public:
     Frei0rParameter<int,double> interpolation;
     bool analyze;
+    bool filterUpDisplay;
 
     Frei0rParameter<int,double> maxStep;
     Frei0rParameter<int,double> subpixels;
@@ -466,6 +467,7 @@ class Stabilize360v2 : public Frei0rFilter, MPFilter {
         previousFrame = NULL;
         previousFrameTime = -1;
         analyze = false;
+        filterUpDisplay = true;
 
         reducedScale = height / 128;
         if (reducedScale < 1) {
@@ -494,6 +496,7 @@ class Stabilize360v2 : public Frei0rFilter, MPFilter {
         register_fparam(clipOffset, "clipOffset", "");
         register_fparam(interpolation, "interpolation", "");
         register_param(analyze, "analyze", "");
+        register_param(filterUpDisplay, "filterUpDisplay", "");
         register_fparam(maxStep, "maxStep", "");
         register_fparam(subpixels, "subpixels", "");
 
@@ -634,7 +637,7 @@ class Stabilize360v2 : public Frei0rFilter, MPFilter {
                                     double py = dy + ys * step;
                                     double pp = dp + ps * step;
                                     double pr = dr + rs * step;
-                                    transform_360(t360support, proposalFrame, currentFrame, reducedWidth, reducedHeight, 0, reducedHeight,
+                                    transform_360(t360support, proposalFrame, currentFrame, reducedWidth, reducedHeight,
                                         py, pp, pr,
                                         Interpolation::MONO_BILINEAR);
                                     int64_t score = diff(previousFrame, proposalFrame, reducedWidth, reducedHeight, best);
@@ -662,40 +665,42 @@ class Stabilize360v2 : public Frei0rFilter, MPFilter {
                 view (0, 0, 0);
             }
 
-            Graphics postXform (out, width, height);
+            if (filterUpDisplay) {
+                Graphics postXform (out, width, height);
 
-            unsigned int diagramWidth = 512;
-            if (diagramWidth > width / 2) {
-                diagramWidth = width / 2;
-            }
-            unsigned int diagramHeight = 128;
-            if (diagramHeight > height / 4) {
-                diagramHeight = diagramHeight;
-            }
-            rawSamples.drawDiagram (postXform, clipTime, width / 2, 3 * height / 4, diagramWidth, diagramHeight);
+                unsigned int diagramWidth = 512;
+                if (diagramWidth > width / 2) {
+                    diagramWidth = width / 2;
+                }
+                unsigned int diagramHeight = 128;
+                if (diagramHeight > height / 4) {
+                    diagramHeight = diagramHeight;
+                }
+                rawSamples.drawDiagram (postXform, clipTime, width / 2, 3 * height / 4, diagramWidth, diagramHeight);
 
-            char buf[1024];
-            size_t frames = rawSamples.size();
-            double earliest = rawSamples.size() > 0 ? rawSamples[0].time : -1;
-            double latest = rawSamples.size() > 0 ? rawSamples[rawSamples.size() - 1].time : -1;
-            int skip = rawSamples.findFirstSkip();
-            char skipBuf[256];
-            if (skip < 0) {
-                snprintf (skipBuf, 256, "No frame skips detected.");
-            } else {
-                snprintf (skipBuf, 256, "Frame skipped at %.2f s.", rawSamples[skip].time);
-            }
-            snprintf (buf, 1024,
-                      "%s\n"
-                      "At %.3fs -> %.3fs (%.2fs) %zd frames, from %.2f s to %.2f s\n"
-                      "%s\n"
-                      "Last frame motion: (%.3f, %.3f, %.3f)", analysisFile.c_str(),
-                      previousFrameTime, clipTime, time,
-                      frames, earliest, latest, skipBuf,
-                      yaw, pitch, roll);
-            std::string status(buf);
+                char buf[1024];
+                size_t frames = rawSamples.size();
+                double earliest = rawSamples.size() > 0 ? rawSamples[0].time : -1;
+                double latest = rawSamples.size() > 0 ? rawSamples[rawSamples.size() - 1].time : -1;
+                int skip = rawSamples.findFirstSkip();
+                char skipBuf[256];
+                if (skip < 0) {
+                    snprintf (skipBuf, 256, "No frame skips detected.");
+                } else {
+                    snprintf (skipBuf, 256, "Frame skipped at %.2f s.", rawSamples[skip].time);
+                }
+                snprintf (buf, 1024,
+                        "%s\n"
+                        "At %.3fs -> %.3fs (%.2fs) %zd frames, from %.2f s to %.2f s\n"
+                        "%s\n"
+                        "Last frame motion: (%.3f, %.3f, %.3f)", analysisFile.c_str(),
+                        previousFrameTime, clipTime, time,
+                        frames, earliest, latest, skipBuf,
+                        yaw, pitch, roll);
+                std::string status(buf);
 
-            postXform.drawText(8, 8, status, 0, 0xff0000ff);
+                postXform.drawText(8, 8, status, 0, 0xff0000ff);
+            }
 
             previousFrameTime = clipTime;
             if (previousFrame == NULL) {

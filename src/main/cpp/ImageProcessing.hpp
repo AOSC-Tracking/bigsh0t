@@ -40,6 +40,7 @@ uint32_t int64lerp(const uint32_t a, const uint32_t b, const int x);
 uint32_t int32Scale(const uint32_t v, const uint32_t rs, const uint32_t gs, const uint32_t bs, const uint32_t shift);
 uint32_t int32Scale(const uint32_t v, const uint32_t rs, const uint32_t gs, const uint32_t bs, const uint32_t den, const LUT& lut, const LUT& invLut);
 
+void transform_360(const Transform360Support& t360, uint32_t* out, uint32_t* ibuf1, int width, int height, double yaw, double pitch, double roll, int interpolation);
 void transform_360(const Transform360Support& t360, uint32_t* out, uint32_t* ibuf1, int width, int height, int start_scanline, int num_scanlines, double yaw, double pitch, double roll, int interpolation);
 void transform_360(const Transform360Support& t360, uint32_t* out, uint32_t* ibuf1, int width, int height, int start_scanline, int num_scanlines, const Matrix3& xform, int interpolation);
 void transform_360_map(const Transform360Support& t360, float* out, int width, int height, int start_scanline, int num_scanlines, double yaw, double pitch, double roll);

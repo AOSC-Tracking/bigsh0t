@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <inttypes.h>
 
+#include "omp_compat.h"
 #include "sse_compat.hpp"
 #include "EMoR.hpp"
 #include "ImageProcessing.hpp"
@@ -429,6 +430,36 @@ void transform_360_tmpl(const Transform360Support& t360, uint32_t* out, uint32_t
                 break;
             }
             out[yi * width + xi] = pixel;
+        }
+    }
+}
+
+void transform_360(const Transform360Support& t360, uint32_t* out, uint32_t* ibuf1, int width, int height, double yaw, double pitch, double roll, int interpolation) {
+    double yawR = DEG2RADF(yaw);
+    double pitchR = DEG2RADF(pitch);
+    double rollR = DEG2RADF(roll);
+
+    Matrix3 xform;
+
+    xform.identity();
+    rotateX(xform, rollR);
+    rotateY(xform, pitchR);
+    rotateZ(xform, yawR);
+
+    int numThreads = omp_get_max_threads();
+    int blockSize = (height % numThreads) == 0 ? (height / numThreads) : (height / numThreads) + 1;
+    if (blockSize < 1) {
+        blockSize = 1;
+    }
+    #pragma omp parallel for
+    for (int i = 0; i < numThreads; ++i) {
+        int start = i * blockSize;
+        int end = start + blockSize;
+        if (start < height) {
+            if (end > height) {
+                end = height;
+            }
+            transform_360(t360, out, ibuf1, width, height, start, end - start, xform, interpolation);
         }
     }
 }

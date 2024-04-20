@@ -6,7 +6,7 @@ void MPFilter::updateMP(MPFilter* filter, double time,
                         uint32_t* out,
                         const uint32_t* in, int width, int height) {
     int numThreads = omp_get_max_threads();
-    int blockSize = (height / numThreads) + 1;
+    int blockSize = (height % numThreads) == 0 ? (height / numThreads) : (height / numThreads) + 1;
     if (blockSize < 1) {
         blockSize = 1;
     }

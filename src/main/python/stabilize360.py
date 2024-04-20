@@ -39,6 +39,7 @@ def main() -> None:
       <property name="mlt_service">frei0r.bigsh0t_stabilize_360_v2</property>
       <property name="shotcut:filter">bigsh0t_stabilize_360_v2</property>
       <property name="analyze">1</property>
+      <property name="filterUpDisplay">0</property>
       <property name="interpolation">1</property>
       <property name="subpixels">2</property>
       <property name="maxStep">16</property>
