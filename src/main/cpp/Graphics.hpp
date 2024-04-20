@@ -14,6 +14,7 @@ class Graphics {
     void fillRect (int x, int y, int w, int h, uint32_t mask, uint32_t color);
     void drawRect (int x, int y, int w, int h, uint32_t mask, uint32_t color);
     void drawText (int x, int y, const std::string& text, uint32_t mask, uint32_t color);
+    void blt(const uint32_t* in, int x0, int y0, int inWidth, int inHeight);
 
   public:
     uint32_t* buffer;

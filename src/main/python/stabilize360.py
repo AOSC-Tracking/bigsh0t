@@ -88,7 +88,7 @@ def main() -> None:
         ).decode("utf-8")
 
         consumer = """
-        <consumer ab="384k" no_audio="1" no_video="1" acodec="aac" ar="48000" bf="3" channels="2" crf="23" deinterlacer="bwdif" f="mp4" g="150" mlt_service="avformat" movflags="+faststart" preset="fast" real_time="0" rescale="bilinear" target="{output_movie}" threads="0" top_field_first="2" vbr="off" vcodec="libx264"/>
+        <consumer ab="384k" acodec="aac" ar="48000" bf="3" channels="2" crf="23" deinterlacer="bwdif" f="mp4" g="150" mlt_service="avformat" movflags="+faststart" preset="fast" real_time="0" rescale="bilinear" target="{output_movie}" threads="0" top_field_first="2" vbr="off" vcodec="libx264"/>
         """.format(
             output_movie=output_movie
         )

@@ -69,3 +69,11 @@ void Graphics::drawText (int x, int y, const std::string& text, uint32_t mask, u
         }
     }
 }
+
+void Graphics::blt(const uint32_t* in, int x0, int y0, int inWidth, int inHeight) {
+    for (int x = 0; x < inWidth; ++x) {
+        for (int y = 0; y < inHeight; ++y) {
+            buffer[(y + y0) * width + (x + x0)] = in[y * inWidth + x];
+        }
+    }
+}

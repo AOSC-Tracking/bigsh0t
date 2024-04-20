@@ -587,14 +587,6 @@ class Stabilize360v2 : public Frei0rFilter, MPFilter {
     virtual void endApply() {
     }
 
-    void blt(const uint32_t* in, uint32_t* out, int x0, int y0, int inWidth, int inHeight) {
-        for (int x = 0; x < inWidth; ++x) {
-            for (int y = 0; y < inHeight; ++y) {
-                out[(y + y0) * width + (x + x0)] = in[y * inWidth + x];
-            }
-        }
-    }
-
     virtual void update(double time, uint32_t* out, const uint32_t* in) {
         // frei0r filter instances are not thread-safe. Shotcut ignores that, so we'll
         // deal with it by wrapping the execution in a mutex
