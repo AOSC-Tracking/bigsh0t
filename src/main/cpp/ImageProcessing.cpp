@@ -257,7 +257,7 @@ inline uint32_t blerpMono(const uint32_t* frame, int ai, int bi, int ci, int di,
     uint64_t f = c + (((d - c) * ax) >> 7);
 
     uint64_t g = e + (((f - e) * ay) >> 7);
-    return g;
+    return (uint32_t) g;
 }
 
 uint32_t sampleBilinear (const uint32_t* frame, double x, double y, int width, int height) {
@@ -594,35 +594,54 @@ Transform360Support::~Transform360Support() {
 
 void shrinkAndAccumulate(const uint32_t* in, uint32_t* out, int width, int height, int scaleFactor, int reducedWidth, int reducedHeight) {
     memset(out, 0, reducedWidth * reducedHeight * sizeof(uint32_t));
-    const uint8_t* rp = (const uint8_t*) in;
-    int hScaleFactor = scaleFactor * 4;
-    int vWrites = 0;
-    uint32_t* wp0 = out;
-    for (int y = 0; y < height; ++y) {
-        if (vWrites == scaleFactor) {
-            vWrites = 0;
-            wp0 += reducedWidth;
-        }
-        uint32_t* wp = wp0;
-        int hWrites = 0;
-        for (int x = 0; x < width * 4; ++x) {
-            if (hWrites == hScaleFactor) {
-                hWrites = 0;
-                ++wp;
-            }
-            *wp += *rp;
-            ++rp;
-            ++hWrites;
-        }
-        ++vWrites;
-    }
-
     uint32_t max = scaleFactor * scaleFactor * 4 * 256;
 
     int shift = 0;
     while ((max >> shift) > 32767) {
         ++shift;
     }
+
+    int numThreads = omp_get_max_threads();
+    int blockSize = (reducedHeight % numThreads) == 0 ? (reducedHeight / numThreads) : (reducedHeight / numThreads) + 1;
+    if (blockSize < 1) {
+        blockSize = 1;
+    }
+    int hScaleFactor = scaleFactor * 4;
+
+    #pragma omp parallel for
+    for (int i = 0; i < numThreads; ++i) {
+        int start = i * blockSize;
+        int end = start + blockSize;
+        if (start < reducedHeight) {
+            if (end > reducedHeight) {
+                end = reducedHeight;
+            }
+
+            const uint8_t* rp = (const uint8_t*) &in[start * scaleFactor * width];
+            int vWrites = 0;
+            uint32_t* wp0 = &out[start * reducedWidth];
+            *wp0 = 0;
+            for (int y = 0; y < (end - start) * scaleFactor; ++y) {
+                if (vWrites == scaleFactor) {
+                    vWrites = 0;
+                    wp0 += reducedWidth;
+                }
+                uint32_t* wp = wp0;
+                int hWrites = 0;
+                for (int x = 0; x < width * 4; ++x) {
+                    if (hWrites == hScaleFactor) {
+                        hWrites = 0;
+                        ++wp;
+                    }
+                    *wp += *rp;
+                    ++rp;
+                    ++hWrites;
+                }
+                ++vWrites;
+            }
+        }
+    }
+
     uint32_t* p = out;
     for (int i = 0; i < reducedWidth * reducedHeight; ++i) {
         *p = *p >> shift;
@@ -634,6 +653,7 @@ uint64_t diff(const uint32_t* a, const uint32_t* b, int width, int height, uint6
     const uint32_t* ap = a;
     const uint32_t* bp = b;
     uint64_t res = 0;
+
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
             int32_t av = *ap++;

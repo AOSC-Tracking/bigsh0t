@@ -415,7 +415,7 @@ void runTest(const char* name, TestCase testCase) {
 int main(int argc, char* argv[]) {
     RUN_TEST(testDiff);
     RUN_TEST(testSampleBilinearWrappedClampedMono);
-    //RUN_TEST(testShrinkAndAccumulate);
+    RUN_TEST(testShrinkAndAccumulate);
     //RUN_TEST(testEMoR);
     //RUN_TEST(testSummedAreaTable);
     //RUN_TEST(testBlerp);
